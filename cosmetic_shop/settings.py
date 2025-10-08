@@ -1,11 +1,55 @@
+# ...existing code...
+
+from pathlib import Path
+import os
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Đa ngôn ngữ cho admin (đặt sau BASE_DIR)
+from django.utils.translation import gettext_lazy as _
+
+# Thêm LocaleMiddleware vào MIDDLEWARE (nên đặt sau SessionMiddleware, trước CommonMiddleware)
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    # ...các middleware khác...
+]
+
+LANGUAGES = [
+    ('vi', _('Tiếng Việt')),
+    ('en', _('English')),
+]
+
+LANGUAGE_CODE = 'en'
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+# Ép allauth redirect về trang chủ sau đăng nhập
+ACCOUNT_ADAPTER = 'cosmetic_shop.adapter.MyAccountAdapter'
+# Đảm bảo chuyển hướng về trang chủ sau khi đăng nhập
+LOGIN_REDIRECT_URL = '/'
+ACCOUNT_LOGIN_REDIRECT_URL = '/'
+SOCIALACCOUNT_LOGIN_ON_GET = True
 # Email backend (test: in console)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Gửi email thật qua Gmail SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your_email@gmail.com'
-EMAIL_HOST_PASSWORD = 'your_password'
-DEFAULT_FROM_EMAIL = 'Cosmetic Shop <no-reply@cosmeticshop.com>'
+EMAIL_HOST_USER = 'your_email@gmail.com'  # Thay bằng email thật
+EMAIL_HOST_PASSWORD = 'your_app_password'  # Dùng App Password nếu là Gmail
+DEFAULT_FROM_EMAIL = 'Cosmetic Shop <your_email@gmail.com>'
+
+# Hướng dẫn tạo App Password cho Gmail:
+# 1. Truy cập https://myaccount.google.com/security
+# 2. Bật xác minh 2 bước
+# 3. Tạo App Password cho "Mail" và "Windows Computer"
+# 4. Dán App Password vào EMAIL_HOST_PASSWORD
 # ID session cho giỏ hàng
 CART_SESSION_ID = 'cart'
 """
@@ -33,33 +77,63 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-_77a*ur8re839htq8f+vxif08s_-%o+x+j64r#nmf19m=(9l+w'
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['cosmetic-1-8j7w.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'cosmetic-1-8j7w.onrender.com',
+    'localhost',
+    '127.0.0.1',
+    '5b36b858b31b.ngrok-free.app',
+    '.ngrok-free.app',   # cho phép tất cả subdomain của ngrok
+]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://cosmetic-1-8j7w.onrender.com",
+    "https://*.ngrok-free.app",
+]
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',  # Giao diện admin hiện đại
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
+    # Cần cho allauth
+    "django.contrib.sites",
+
+    # Allauth
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+
+    # Provider
+    "allauth.socialaccount.providers.facebook",
+    "allauth.socialaccount.providers.google",
     # Thêm ứng dụng của bạn
-    'products',
+    'products.apps.ProductsConfig',
+    'widget_tweaks',
+    'django_apscheduler',
 ]
+
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'cosmetic_shop.urls'
@@ -119,7 +193,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
-LANGUAGE_CODE = 'en-us'
+#LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
@@ -135,4 +209,149 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Jazzmin Admin UI Customization
+JAZZMIN_SETTINGS = {
+    "site_title": "Cosmetic Shop Admin",
+    "site_header": "Cosmetic Shop Admin",
+    "site_brand": "Cosmetic Shop",
+    "site_logo": None,  # Đặt đường dẫn logo nếu có, ví dụ: "static/logo.png"
+    "welcome_sign": "Chào mừng đến với trang quản trị Cosmetic Shop!",
+    "copyright": "Cosmetic Shop © 2025",
+    "search_model": ["products.Product", "products.Order"],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "order_with_respect_to": ["products", "auth"],
+    "custom_css": "css/cosmetic_admin.css",  # Sử dụng file CSS hồng đen riêng
+    "custom_js": None,
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "products": "fas fa-boxes",
+    },
+    "default_icon_parents": "fas fa-folder-open",
+    "default_icon_children": "fas fa-dot-circle",
+    "related_modal_active": True,
+    "theme": "cosmo",  # Bootstrap theme, có thể chọn flatly/lux/cosmo...
+    "dark_mode_theme": None,
+    "login_logo": None,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
+    "custom_links": {},
+    "use_google_fonts_cdn": True,
+    "google_fonts": ["Montserrat:400,700", "Roboto:400,500"],
+    "show_settings": False,
+    "show_logout": True,
+    "show_changelist_top_actions": True,
+    "show_changelist_bottom_actions": False,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    "site_logo_dark": None,
+    "site_logo_light": None,
+}

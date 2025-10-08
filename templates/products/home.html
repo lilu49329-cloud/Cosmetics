@@ -1,54 +1,290 @@
+<style>
+/* Countdown text nổi bật trên progress bar */
+.countdown-container .progress {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    height: 32px;
+}
+.countdown-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+.countdown {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    color: #fff !important;
+    font-weight: bold;
+    white-space: nowrap;
+    text-shadow:
+        0 1px 2px #c2185b,
+        0 0 4px #fff,
+        0 0 2px #ff69b4;
+}
+</style>
 {% extends 'products/base.html' %}
-{% block title %}Trang chủ | Cosmetic Shop{% endblock %}
+{% load humanize %}
+{% load tz %}
+{# Đảm bảo bạn đã thêm 'django.contrib.humanize' vào INSTALLED_APPS trong settings.py để filter intcomma hoạt động #}
+{% comment %} {% block title %}Trang chủ | Cosmetic Shop{% endblock %} {% endcomment %}
+
 {% block content %}
-<div class="container my-4 py-4" style="background: #221b29; border-radius: 1rem; color: #fff0f6; box-shadow: 0 2px 8px #ff69b4;">
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <div class="p-4 mb-4 text-center" style="background: linear-gradient(90deg, #ff69b4 0%, #18141c 100%); border-radius: 1rem; color: #fff0f6;">
-                <h1 style="font-weight:900; letter-spacing:2px; color:#ff69b4;">Chào mừng đến với Cosmetic Shop!</h1>
-                <p class="lead" style="color:#fff0f6; font-size:1.3rem;">Khám phá các sản phẩm mỹ phẩm chất lượng, giá tốt, giao hàng toàn quốc.</p>
-                <a href="{% url 'products' %}" class="btn btn-auth btn-lg mt-2" style="background:#ff69b4; color:#18141c; font-weight:bold; border-radius:0.7rem;">Mua ngay</a>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row mb-4">
+<!-- Section: Flash Sale động (đầu tiên) -->
+<div class="row mt-4">
     <div class="col-12">
-        <h2 class="mb-3">Danh mục nổi bật</h2>
-        <div class="d-flex flex-wrap gap-3">
-            {% for category in categories %}
-            <div class="card shadow-sm" style="min-width:180px;">
-                <div class="card-body text-center">
-                    <h5 class="card-title">{{ category.name }}</h5>
-                    <p class="card-text">{{ category.description|truncatewords:10 }}</p>
-                    <a href="/products/?category={{ category.id }}" class="btn btn-outline-primary btn-sm">Xem sản phẩm</a>
+        <div class="rounded shadow-sm p-4 mb-4" style="background:#fff;">
+            <h4 style="color:#ff69b4;font-weight:bold;">⚡ Flash Sale</h4>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+                {% for product in flash_sale_products %}
+                <div class="col">
+                    <div class="card product-card h-100 position-relative" style="border:2px solid #ff69b4; border-radius:1.2rem;">
+                        {% if product.brand %}
+                        <span class="position-absolute top-0 end-0 m-2" style="font-size:0.9rem;color:#ff69b4;font-weight:bold;z-index:2;">{{ product.brand }}</span>
+                        {% endif %}
+                        <img src="{% if product.image %}{{ product.image.url }}{% else %}https://img.icons8.com/color/96/ff69b4/lipstick.png{% endif %}" class="card-img-top" alt="{{ product.name }}" style="object-fit:contain;max-height:160px;">
+                        {% if product.has_gift or product.is_gift %}
+                        <div class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark">QUÀ TẶNG</div>
+                        {% endif %}
+                        {% if product.discount_percent and product.discount_percent > 0 %}
+                        <div class="position-absolute top-0 end-0 m-2 badge bg-danger" style="right:40px!important;">-{{ product.discount_percent }}%</div>
+                        {% endif %}
+                        <div class="card-body pb-2">
+                            <h5 class="card-title mb-1" style="font-size:1.1rem;font-weight:600;">{{ product.name }}</h5>
+                            <div class="mb-1" style="font-size:0.95rem;color:#888;">{{ product.description|truncatechars:40 }}</div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="fw-bold" style="color:#f44336;font-size:1.1rem;">{{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
+                                {% if product.original_price and product.original_price > product.price %}
+                                    <span class="text-decoration-line-through text-muted" style="font-size:0.95rem;">{{ product.original_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
+                                {% endif %}
+                            </div>
+                            {% if product.sale_end %}
+                            <div class="countdown-container mt-1">
+                                <div class="progress countdown-progress" style="background: #ffe4f2;">
+                                    <div class="progress-bar countdown-bar" style="background: repeating-linear-gradient(135deg, #ff69b4, #ff69b4 20px, #ff1493 20px, #ff1493 40px); border-radius: 16px; height: 100%; transition: width 0.7s cubic-bezier(.4,2,.6,1);"></div>
+                                    <span class="countdown small" style="font-size: 1.1rem;" data-end="{{ product.sale_end|localtime|timezone:'Asia/Ho_Chi_Minh'|date:'Y-m-d\\TH:i:s' }}"></span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{% url 'cart_add' product.id %}" class="position-absolute bottom-0 end-0 m-2" style="z-index:3;">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn p-0" style="background:none;border:none;outline:none;">
+                                <i class="bi bi-cart-plus" style="font-size:1.5rem; color:#ff69b4;" title="Thêm vào giỏ hàng"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted">Chưa có sản phẩm Flash Sale.</div>
+                {% endfor %}
             </div>
-            {% empty %}
-            <p>Chưa có danh mục nào.</p>
-            {% endfor %}
         </div>
     </div>
+    </div>
 </div>
-<div class="row">
+<script>
+// Countdown + progress bar động cho từng sản phẩm
+function pad(n){return n<10?'0'+n:n}
+document.querySelectorAll('.countdown').forEach(function(cd){
+    let end = new Date(cd.dataset.end).getTime();
+    let now = new Date().getTime();
+    let container = cd.closest('.countdown-container');
+    let bar = container ? container.querySelector('.countdown-bar') : null;
+    let start = container && container.dataset.start ? parseInt(container.dataset.start) : now;
+    let total = end - start;
+    if(total <= 0) total = 1;
+    let timer = setInterval(function(){
+        let now = new Date().getTime();
+        let d = end-now;
+        if(d<=0){cd.innerHTML='Hết hạn';if(bar) bar.style.width='0%';clearInterval(timer);return;}
+        let days=Math.floor(d/(1000*60*60*24));
+        let hours=Math.floor((d%(1000*60*60*24))/(1000*60*60));
+        let mins=Math.floor((d%(1000*60*60))/(1000*60));
+        let secs=Math.floor((d%(1000*60))/1000);
+        cd.innerHTML=`${pad(hours)} : ${pad(mins)} : ${pad(secs)}`;
+        if(bar) {
+            let percent = Math.max(0, Math.min(100, (d/total)*100));
+            bar.style.width = percent + '%';
+        }
+    },1000);
+});
+</script>
+
+<style>
+.product-card{transition:box-shadow .2s,transform .2s;box-shadow:0 2px 8px #ffb6d5a0;border-radius:1.2rem;}
+.product-card:hover{box-shadow:0 6px 24px #ff69b4a0;transform:translateY(-4px) scale(1.03);}
+.countdown-container { min-width: 180px; }
+.countdown-progress { background: #ffe4f2!important; box-shadow: 0 2px 8px #ffb6d5a0; }
+.countdown-bar { transition: width 0.7s cubic-bezier(.4,2,.6,1); opacity: 0.95; }
+</style>
+
+<script>
+// AJAX add to cart for all product card forms
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('form[action*="cart_add"]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(res => res.json())
+                    .then(data => {
+                        // Hiển thị toast
+                        var toast = document.getElementById('cart-toast');
+                        if (toast) {
+                            toast.style.display = 'block';
+                            setTimeout(function(){ toast.style.display = 'none'; }, 2000);
+                        }
+                        // Cập nhật badge bell
+                        if (data.notifications_count !== undefined) {
+                            var bellBadge = document.getElementById('bell-badge');
+                            if (bellBadge) {
+                                bellBadge.textContent = data.notifications_count;
+                                bellBadge.style.display = data.notifications_count > 0 ? 'inline-block' : 'none';
+                            }
+                        }
+                        // Cập nhật badge số lượng trên icon giỏ hàng
+                        if (data.cart_count !== undefined) {
+                            var cartIcon = document.querySelector('a[title="Giỏ hàng"]');
+                            if (cartIcon) {
+                                let badge = cartIcon.querySelector('.cart-badge');
+                                if (!badge) {
+                                    badge = document.createElement('span');
+                                    badge.className = 'cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                                    badge.style.fontSize = '0.8rem';
+                                    cartIcon.appendChild(badge);
+                                }
+                                badge.textContent = data.cart_count;
+                                badge.style.display = data.cart_count > 0 ? 'inline-block' : 'none';
+                            }
+                        }
+                    })
+            .catch(() => {
+                alert('Có lỗi khi thêm vào giỏ hàng.');
+            });
+        });
+    });
+});
+</script>
+
+<!-- Section: Sản phẩm hot -->
+<div class="row mt-4">
     <div class="col-12">
-        <h2 class="mb-3">Sản phẩm mới nhất</h2>
+        <div class="rounded shadow-sm p-4 mb-4" style="background:#fff0f6;">
+            <h4 style="color:#ff69b4;font-weight:bold;">🔥 Sản phẩm hot</h4>
+            <div class="row g-3">
+                {% for product in hot_products %}
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm position-relative" style="border:2px solid #ff69b4; border-radius:1.2rem; cursor:pointer;">
+                        <a href="{% url 'product_detail' product.id %}" style="text-decoration:none; color:inherit;">
+                            <div class="position-absolute" style="top:10px;right:10px;z-index:2;">
+                                {% if product.discount and product.discount > 0 %}
+                                <span class="badge bg-danger" style="font-size:1rem;">-{{ product.discount }}%</span>
+                                {% endif %}
+                            </div>
+                            <div style="background:#fff0f6; border-radius:1rem 1rem 0 0; padding:10px; min-height:220px; display:flex;align-items:center;justify-content:center;">
+                                {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width:100%;max-height:180px;object-fit:contain;">
+                                {% else %}
+                                <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80" alt="{{ product.name }}" style="max-width:100%;max-height:180px;object-fit:contain;">
+                                {% endif %}
+                            </div>
+                        </a>
+                        <div class="card-body pb-2 pt-3" style="background:#fff; border-radius:0 0 1rem 1rem;">
+                            <div style="font-size:1.2rem; color:#ff69b4; font-weight:700;" class="d-flex align-items-center gap-2">
+                                {% if product.sale_price %}
+                                    {{ product.sale_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
+                                    <span style="color:#888;font-size:1rem;text-decoration:line-through; margin-left:8px;">{{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
+                                {% else %}
+                                    {{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
+                                {% endif %}
+                            </div>
+                            <form method="post" action="{% url 'cart_add' product.id %}" class="position-absolute bottom-0 end-0 m-2" style="z-index:3;">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn p-0" style="background:none;border:none;outline:none;">
+                                    <i class="bi bi-cart-plus" style="font-size:1.5rem; color:#ff69b4;" title="Thêm vào giỏ hàng"></i>
+                                </button>
+                            </form>
+                            <div style="font-size:0.95rem; font-weight:700; color:#221b29; margin-top:2px;">{{ product.brand|upper }}</div>
+                            <div style="font-size:1rem; color:#221b29; font-weight:500; margin-bottom:4px;">{{ product.name }}</div>
+                            <div style="font-size:0.97rem; color:#444; min-height:38px;">{{ product.description|truncatewords:12 }}</div>
+                            {% if product.has_gift %}
+                            <span class="badge bg-success mt-2">Quà tặng</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted">Không có sản phẩm hot nào.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
+
+
+<!-- Sản phẩm nổi bật -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h3 style="color:#ff69b4;font-weight:bold;">Sản phẩm mới</h3>
+            <a href="{% url 'product_list' %}" class="btn btn-auth btn-sm">Xem tất cả sản phẩm</a>
+        </div>
         <div class="row">
             {% for product in products %}
             <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text">Thương hiệu: {{ product.brand }}</p>
-                        <p class="card-text">Giá: <strong>{{ product.price|floatformat:0 }}₫</strong></p>
-                        <a href="{% url 'product_detail' product.id %}" class="btn btn-primary btn-sm">Xem chi tiết</a>
-                    </div>
+                <div class="card h-100 shadow-sm" style="background:#fff;border:1px solid #ff69b4;color:#18141c; cursor:pointer; position:relative;">
+                    <a href="{% url 'product_detail' product.id %}" style="text-decoration:none; color:inherit;">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="{{ product.name }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title" style="color:#ff69b4;">{{ product.name }}</h5>
+                            <p class="card-text">Thương hiệu: <span style="color:#fff0f6">{{ product.brand }}</span></p>
+                            <p class="card-text">
+                                <strong style="color:#ff69b4" class="d-flex align-items-center gap-2">
+                                    {% if product.sale_price %}
+                                        {{ product.sale_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
+                                        <span style="color:#888;font-size:1rem;text-decoration:line-through; margin-left:8px;">{{ product.price|intcomma }}₫</span>
+                                    {% else %}
+                                        {{ product.price|intcomma }}₫
+                                    {% endif %}
+                                </strong>
+                            </p>
+                        </div>
+                    </a>
+                    <form method="post" action="{% url 'cart_add' product.id %}" class="position-absolute bottom-0 end-0 m-2" style="z-index:3;">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn p-0" style="background:none;border:none;outline:none;">
+                            <i class="bi bi-cart-plus" style="font-size:1.5rem; color:#ff69b4;" title="Thêm vào giỏ hàng"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
             {% empty %}
-            <p>Chưa có sản phẩm nào.</p>
+            <p class="text-center">Chưa có sản phẩm nào.</p>
             {% endfor %}
         </div>
     </div>
 </div>
 {% endblock %}
+

@@ -1,3 +1,100 @@
+from django.db import models
+# --- Chatbot Models ---
+class FAQ(models.Model):
+    question = models.CharField("Câu hỏi thường gặp", max_length=255, unique=True)
+    answer = models.TextField("Câu trả lời")
+    tags = models.CharField("Từ khóa liên quan", max_length=255, blank=True, help_text="Phân tách bởi dấu phẩy, ví dụ: son, môi, đỏ")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Câu hỏi thường gặp (FAQ)"
+        verbose_name_plural = "Câu hỏi thường gặp (FAQ)"
+
+    def __str__(self):
+        return self.question
+
+class ChatHistory(models.Model):
+    user = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True)
+    session_id = models.CharField(max_length=64, blank=True, db_index=True)
+    message = models.TextField("Tin nhắn người dùng")
+    bot_reply = models.TextField("Phản hồi của bot")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Lịch sử chat chatbot"
+        verbose_name_plural = "Lịch sử chat chatbot"
+        ordering = ["-created_at"]
+from django.db import models
+# Model thương hiệu
+class Brand(models.Model):
+    name = models.CharField("Tên thương hiệu", max_length=100, unique=True)
+    logo = models.ImageField("Logo thương hiệu", upload_to="brands/", blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Brand"
+        verbose_name_plural = "Brands"
+
+    def __str__(self):
+        return self.name
+from django.db import models
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+
+# Hồ sơ người dùng mở rộng
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    points = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.user.username
+
+# Tự động tạo UserProfile khi tạo User
+@receiver(post_save, sender=User)
+
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
+
+# Thông báo cho người dùng
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user}: {self.message}"
+
+class HotDealBanner(models.Model):
+    """Banner ảnh cho Hot Deals"""
+    title = models.CharField("Tiêu đề banner", max_length=200, blank=True)
+    image = models.ImageField("Ảnh banner Hot Deals", upload_to="hotdeals/", blank=False, null=False)
+    link = models.URLField("Liên kết khi click", blank=True)
+    is_active = models.BooleanField("Hiển thị", default=True)
+    created_at = models.DateTimeField("Ngày tạo", auto_now_add=True)
+    updated_at = models.DateTimeField("Ngày cập nhật", auto_now=True)
+
+    class Meta:
+        verbose_name = "Hot Deal Banner"
+        verbose_name_plural = "Hot Deal Banners"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title or f"Banner #{self.id}"
 
 from django.db import models
 
@@ -11,8 +108,8 @@ class Promotion(models.Model):
     products = models.ManyToManyField('Product', related_name='promotions', blank=True)
 
     class Meta:
-        verbose_name = "Khuyến mãi"
-        verbose_name_plural = "Khuyến mãi"
+        verbose_name = "Promotion"
+        verbose_name_plural = "Promotions"
 
     def __str__(self):
         return self.name
@@ -23,31 +120,65 @@ class Category(models.Model):
     description = models.TextField("Mô tả", blank=True)
 
     class Meta:
-        verbose_name = "Danh mục"
-        verbose_name_plural = "Danh mục"
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
 
 class Product(models.Model):
+    class Meta:
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
+
+    brand_origin = models.CharField("Xuất xứ thương hiệu", max_length=100, blank=True, null=True)
+    texture = models.CharField("Kết cấu", max_length=100, blank=True, null=True)
+    skin_type = models.CharField("Loại da", max_length=100, blank=True, null=True)
     """Sản phẩm mỹ phẩm"""
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     name = models.CharField("Tên sản phẩm", max_length=200)
-    brand = models.CharField("Thương hiệu", max_length=100, blank=True)
+    brand = models.ForeignKey('Brand', on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="Thương hiệu")
     description = models.TextField("Mô tả", blank=True)
-    price = models.DecimalField("Giá bán", max_digits=12, decimal_places=2)
+    ingredients = models.TextField("Thành phần", blank=True)
+    usage = models.TextField("Công dụng", blank=True)
+    how_to_use = models.TextField("Cách dùng", blank=True)
     quantity_in_stock = models.PositiveIntegerField("Tồn kho", default=0)
     created_at = models.DateTimeField("Ngày thêm", auto_now_add=True)
     updated_at = models.DateTimeField("Ngày cập nhật", auto_now=True)
     is_active = models.BooleanField("Còn kinh doanh", default=True)
-    image = models.ImageField("Ảnh sản phẩm", upload_to="products/", blank=True, null=True)
+    is_hot = models.BooleanField("Sản phẩm hot", default=False)
+    image = models.ImageField("Ảnh sản phẩm (chính)", upload_to="products/", blank=True, null=True)
     is_promotion = models.BooleanField("Khuyến mãi", default=False)
-    is_flash_sale = models.BooleanField("Flash Sale", default=False)
+    price = models.DecimalField(max_digits=10, decimal_places=0, default=0)
+    original_price = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
+    sale_end = models.DateTimeField(null=True, blank=True, verbose_name="Ngày giờ kết thúc Flash Sale")
+    has_gift = models.BooleanField(default=False, verbose_name="Có quà tặng")
+    sale_end = models.DateTimeField("Ngày kết thúc Flash Sale", blank=True, null=True)
+    has_gift = models.BooleanField("Có quà tặng", default=False)
+
+# Model cho nhiều ảnh sản phẩm phụ
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField("Ảnh phụ", upload_to="products/extra/", blank=False, null=False)
+    alt_text = models.CharField("Mô tả ảnh", max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Product Image"
+        verbose_name_plural = "Product Images"
+
+    def __str__(self):
+        return f"Ảnh phụ cho {self.product.name}"
+
+
 class News(models.Model):
-    """Tin tức làm đẹp, mỹ phẩm"""
-    title = models.CharField("Tiêu đề", max_length=200)
-    content = models.TextField("Nội dung")
-    created_at = models.DateTimeField("Ngày đăng", auto_now_add=True)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    image = models.ImageField(upload_to='news/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         verbose_name = "Tin tức"
@@ -64,34 +195,11 @@ class Store(models.Model):
     phone = models.CharField("Điện thoại", max_length=20, blank=True)
 
     class Meta:
-        verbose_name = "Cửa hàng"
-        verbose_name_plural = "Cửa hàng"
+        verbose_name = "Store"
+        verbose_name_plural = "Stores"
 
     def __str__(self):
         return self.name
-
-    class Meta:
-        verbose_name = "Sản phẩm"
-        verbose_name_plural = "Sản phẩm"
-
-    def __str__(self):
-        return self.name
-
-    @classmethod
-    def search(cls, query=None, category=None):
-        queryset = cls.objects.all()
-        if query:
-            queryset = queryset.filter(
-                models.Q(name__icontains=query) | 
-                models.Q(brand__icontains=query)
-            )
-        if category:
-            queryset = queryset.filter(category=category)
-        return queryset
-
-    class Meta:
-        verbose_name = "Sản phẩm"
-        verbose_name_plural = "Sản phẩm"
 
     def __str__(self):
         return self.name
@@ -106,14 +214,22 @@ class Customer(models.Model):
     updated_at = models.DateTimeField("Ngày cập nhật", auto_now=True)
 
     class Meta:
-        verbose_name = "Khách hàng"
-        verbose_name_plural = "Khách hàng"
+        verbose_name = "Customer"
+        verbose_name_plural = "Customers"
 
     def __str__(self):
         return self.full_name
 
 class Order(models.Model):
     """Đơn hàng"""
+    PAYMENT_METHODS = [
+        ("cod", "Thanh toán khi nhận hàng (COD)"),
+        ("bank", "Chuyển khoản ngân hàng"),
+        ("momo", "Ví MoMo"),
+        ("vnpay", "VNPay"),
+        ("zalopay", "ZaloPay"),
+        ("credit", "Thẻ tín dụng/Ghi nợ")
+    ]
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, related_name="orders")
     order_date = models.DateTimeField("Ngày đặt hàng", auto_now_add=True)
     shipped_date = models.DateTimeField("Ngày giao hàng", null=True, blank=True)
@@ -129,13 +245,14 @@ class Order(models.Model):
         ],
         default="pending"
     )
+    payment_method = models.CharField("Hình thức thanh toán", max_length=20, choices=PAYMENT_METHODS, default="cod")
     shipping_address = models.CharField("Địa chỉ giao hàng", max_length=255, default="", blank=True)
     total_amount = models.DecimalField("Tổng tiền", max_digits=14, decimal_places=2, default=0)
     note = models.TextField("Ghi chú", blank=True)
 
     class Meta:
-        verbose_name = "Đơn hàng"
-        verbose_name_plural = "Đơn hàng"
+        verbose_name = "Order"
+        verbose_name_plural = "Orders"
         ordering = ["-order_date"]
 
     def __str__(self):
@@ -157,8 +274,8 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField("Số lượng", default=1)
 
     class Meta:
-        verbose_name = "Chi tiết đơn hàng"
-        verbose_name_plural = "Chi tiết đơn hàng"
+        verbose_name = "Order Item"
+        verbose_name_plural = "Order Items"
 
     def __str__(self):
         return f"{self.product_name} ({self.quantity})"

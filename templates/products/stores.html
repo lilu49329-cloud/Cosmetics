@@ -1,0 +1,42 @@
+{% extends 'products/base.html' %}
+{% block title %}Hệ thống cửa hàng | Cosmetic Shop{% endblock %}
+{% block content %}
+<div class="container my-4 py-4" style="background:#fff; border-radius: 1rem; color: #222; box-shadow: 0 2px 8px #ff69b4;">
+    <h2 class="mb-4" style="color:#ff69b4;font-weight:bold;letter-spacing:2px;">Hệ thống cửa hàng</h2>
+    <div class="row">
+        <div class="col-md-5 mb-4">
+            <p>Danh sách các cửa hàng trên toàn quốc:</p>
+            <ul class="list-group mb-4">
+            {% for store in stores %}
+            <li class="list-group-item" style="background:#fff; color:#222; border:1px solid #ffe4ef; border-radius: 0.5rem; margin-bottom: 0.5rem; box-shadow:0 1px 4px #ffe4ef;">
+                <div style="font-weight:bold;font-size:1.1em; color:#ff69b4;">{{ store.name }}</div>
+                <div><i class="fa fa-map-marker-alt" style="color:#ff69b4;"></i> {{ store.address }}</div>
+                {% if store.phone %}<div><i class="fa fa-phone" style="color:#ff69b4;"></i> {{ store.phone }}</div>{% endif %}
+                <a href="{{ store.map_url }}" class="btn btn-sm btn-outline-pink mt-2" target="_blank" style="border-color:#ff69b4;color:#ff69b4;">
+                    Xem chỉ đường trên Google Maps
+                </a>
+            </li>
+            {% empty %}
+            <li class="list-group-item" style="background:#fff; color:#222; border:1px solid #ffe4ef;">Chưa có cửa hàng nào.</li>
+            {% endfor %}
+            </ul>
+            <a href="{% url 'order_lookup' %}" class="btn btn-auth">Tra cứu đơn hàng</a>
+            <div class="mt-4 text-center">
+                <a href="{% url 'home' %}" class="btn btn-outline-primary">← Về trang chủ</a>
+            </div>
+        </div>
+        <div class="col-md-7">
+            {% if stores and stores.0.address %}
+                <div style="width:100%; min-height:350px; border-radius:1rem; overflow:hidden; box-shadow:0 2px 8px #ffe4ef;">
+                    <iframe width="100%" height="350" frameborder="0" style="border:0" allowfullscreen loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        src="https://www.google.com/maps?q={{ stores.0.address|urlencode }}&output=embed">
+                    </iframe>
+                </div>
+            {% else %}
+                <div class="alert alert-info">Không có địa chỉ cửa hàng để hiển thị bản đồ.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

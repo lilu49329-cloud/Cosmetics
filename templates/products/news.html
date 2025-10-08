@@ -1,0 +1,23 @@
+{% extends 'products/base.html' %}
+{% block title %} News | Cosmetics{% endblock %}
+{% block content %}
+<div class="container my-4 py-4" style="background:linear-gradient(90deg,#ff69b4 0%,#fff0f6 100%); border-radius: 1rem; color: #f7f6f8ff; box-shadow: 0 2px 8px #ff69b4;">
+    <h1 class="mb-4" style="color:#ffffff;font-weight:bold;letter-spacing:2px;">📰  News</h1>
+    <p>Tin tức mới nhất về mỹ phẩm, làm đẹp, xu hướng:</p>
+    {# Tin tức sẽ được đăng qua trang admin Django, không hiển thị form cho người dùng #}
+    <ul class="list-group mb-4">
+    {% for news in news_list %}
+    <li class="list-group-item" style="background:#fff0f6;color:#18141c;">
+        <div style="font-weight:600;">{{ news.title }} <span style="font-size:0.95rem;color:#888;">- {{ news.created_at|date:'d/m/Y' }}</span></div>
+        <div style="font-size:0.97rem;">{{ news.content }}</div>
+    </li>
+    {% empty %}
+    <li class="list-group-item" style="background:#fff0f6;color:#18141c;">Chưa có tin tức nào.</li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'product_list' %}" class="btn btn-auth" style="color:#fff !important;">Khám phá sản phẩm</a>
+    <div class="mt-4 text-center">
+        <a href="{% url 'home' %}" class="btn btn-outline-primary" style="color:#fff !important;">← Về trang chủ</a>
+    </div>
+</div>
+{% endblock %}

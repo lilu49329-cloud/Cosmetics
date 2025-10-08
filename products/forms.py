@@ -41,7 +41,7 @@ class CartAddProductForm(forms.Form):
     quantity = forms.IntegerField(
         label='Số lượng',
         min_value=1,
-        widget=forms.NumberInput(attrs={'class': 'form-control', 'value': 1})
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
     override = forms.BooleanField(
         required=False,
@@ -50,9 +50,14 @@ class CartAddProductForm(forms.Form):
     )
 
 class OrderForm(forms.ModelForm):
+    payment_method = forms.ChoiceField(
+        label='Hình thức thanh toán',
+        choices=Order.PAYMENT_METHODS,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
     class Meta:
         model = Order
-        fields = ['shipping_address', 'note']
+        fields = ['shipping_address', 'note', 'payment_method']
         widgets = {
             'shipping_address': forms.TextInput(attrs={'class': 'form-control'}),
             'note': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),

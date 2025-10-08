@@ -1,17 +1,92 @@
 {% extends 'products/base.html' %}
-{% block title %}Tài khoản của tôi | Cosmetic Shop{% endblock %}
+{% load humanize %}
+{% block title %}Tài khoản của tôi | Cosmetics{% endblock %}
 {% block content %}
-<div class="container my-4 py-4" style="background: #221b29; border-radius: 1rem; color: #fff0f6; box-shadow: 0 2px 8px #ff69b4;">
+<div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-12">
-            <div class="p-4 mb-4 text-center" style="background: linear-gradient(90deg, #ff69b4 0%, #18141c 100%); border-radius: 1rem; color: #fff0f6;">
-                <h2 style="font-weight:900; letter-spacing:2px; color:#ff69b4;">Chào mừng, {{ user.get_full_name|default:user.username }}!</h2>
-                <div class="card mt-3" style="background:#18141c; color:#fff0f6; border-radius:0.7rem;">
-                    <div class="card-body">
-                        <h5 class="card-title" style="color:#ff69b4;">Thông tin tài khoản</h5>
-                        <p><strong>Email:</strong> {{ user.email }}</p>
-                        <p><strong>Ngày tham gia:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
-                        <a href="/products/orders/" class="btn btn-auth">Xem đơn hàng của bạn</a>
+        <div class="col-lg-10 col-xl-9">
+            <div class="card shadow-sm p-4" style="border-radius:1.2rem;background:#fff;">
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-3 text-center">
+                        <form method="post" enctype="multipart/form-data" action="{% url 'avatar_upload' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="rounded-circle border" style="width:120px;height:120px;object-fit:cover;">
+                                {% else %}
+                                    <img src="/static/images/default-category.png" alt="Avatar" class="rounded-circle border" style="width:120px;height:120px;object-fit:cover;">
+                                {% endif %}
+                            </div>
+                            <input type="file" name="avatar" accept="image/*" class="form-control mb-2">
+                            <button type="submit" class="btn btn-auth btn-sm w-100">Lưu</button>
+                        </form>
+                    </div>
+                    <div class="col-md-9">
+                        <h2 style="font-weight:900; letter-spacing:2px; color:#ff69b4;">Xin chào, {{ user.get_full_name|default:user.username }}!</h2>
+                        <form method="post" action="{% url 'user_update' %}" class="row g-3 mt-2">
+                            {% csrf_token %}
+                            <div class="col-md-6">
+                                <label class="form-label">Họ tên</label>
+                                <input type="text" name="full_name" class="form-control" value="{{ user.get_full_name }}" style="color:#18141c;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" value="{{ user.email }}" style="color:#18141c;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Ngày tham gia</label>
+                                <input type="text" class="form-control" value="{{ user.date_joined|date:'d/m/Y' }}" readonly style="color:#18141c;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="text" name="phone" class="form-control" value="{{ user.profile.phone }}" style="color:#18141c;">
+                            </div>
+                            <div class="col-12 text-end">
+                                <button type="submit" class="btn btn-auth">Cập nhật thông tin</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h5 class="mb-3" style="color:#ff69b4;font-weight:bold;">Lịch sử mua hàng</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã đơn</th>
+                                        <th>Ngày</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for order in user.orders.all %}
+                                    <tr>
+                                        <td><a href="{% url 'order_detail' order.id %}">#{{ order.id }}</a></td>
+                                        <td>{{ order.created|date:'d/m/Y' }}</td>
+                                        <td>{{ order.total|floatformat:0|intcomma }}₫</td>
+                                        <td>{{ order.get_status_display }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="4" class="text-center text-muted">Chưa có đơn hàng nào.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="mb-3" style="color:#ff69b4;font-weight:bold;">Tích điểm</h5>
+                        <div class="card p-3" style="background:#fff0f6;border-radius:1rem;">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="/static/images/logoshop.png" alt="Điểm" style="width:48px;height:48px;">
+                                <div>
+                                    <div style="font-size:1.3rem;font-weight:700;color:#ff69b4;">{{ user.profile.points|default:0 }} điểm</div>
+                                    <div style="font-size:1rem;color:#888;">Tích điểm khi mua hàng và nhận ưu đãi hấp dẫn!</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

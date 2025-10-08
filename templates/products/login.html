@@ -1,20 +1,35 @@
 {% extends 'products/login_base.html' %}
-{% block title %}Đăng nhập | Cosmetic Shop{% endblock %}
+{% load widget_tweaks %}
+{% block title %}Đăng nhập | Cosmetics {% endblock %}
 {% block content %}
-<div class="auth-title">Đăng nhập</div>
+<div class="auth-title text-center mb-3" style="font-size: 2rem; font-weight: bold; color: #ff69b4;">Đăng nhập</div>
 <form method="post" autocomplete="off">
     {% csrf_token %}
     {{ form.non_field_errors }}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-auth mb-2">ĐĂNG NHẬP</button>
+    <div class="mb-3 d-flex align-items-center" style="gap: 12px;">
+        <div style="min-width: 110px; text-align: left;">{{ form.username.label_tag }}</div>
+        <div style="flex:1;">{{ form.username|add_class:'w-100' }}</div>
+    </div>
+    <div class="mb-3 d-flex align-items-center" style="gap: 12px;">
+        <div style="min-width: 110px; text-align: left;">{{ form.password.label_tag }}</div>
+        <div style="flex:1;">{{ form.password|add_class:'w-100' }}</div>
+    </div>
+    <button type="submit" class="btn btn-auth w-100 mb-2" style="font-weight:600;">ĐĂNG NHẬP</button>
 </form>
-<div class="d-flex justify-content-between mb-3">
-    <a href="#">Quên mật khẩu?</a>
+<div class="d-flex justify-content-between mb-3" style="font-size:0.97rem;">
+    <a href="/password-reset/">Quên mật khẩu?</a>
     <a href="/register/">Đăng ký</a>
 </div>
-<div class="or-divider">HOẶC</div>
-<div class="social-btns mb-2">
-    <button type="button"><img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" width="20" style="margin-right:8px;vertical-align:middle;"> Facebook</button>
-    <button type="button"><img src="https://cdn-icons-png.flaticon.com/512/281/281764.png" width="20" style="margin-right:8px;vertical-align:middle;"> Google</button>
+<div class="or-divider text-center my-3" style="color:#aaa; font-size:0.95rem; position:relative;">
+  <span style="background:#fff; padding:0 12px; position:relative; z-index:1;">HOẶC</span>
+  <div style="height:1px; background:#eee; position:absolute; left:0; right:0; top:50%; z-index:0;"></div>
+</div>
+<div class="social-btns mb-2 d-flex flex-row gap-2">
+    <a href="/accounts/facebook/login/" class="btn btn-social btn-facebook w-100" style="display:flex;align-items:center;justify-content:center;background:#4267B2;color:#fff;font-weight:500;gap:8px;border-radius:6px;min-height:40px;max-width:48%;">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="20" style="vertical-align:middle;"> Facebook
+    </a>
+    <a href="/accounts/google/login/" class="btn btn-social btn-google w-100" style="display:flex;align-items:center;justify-content:center;background:#fff;color:#444;font-weight:500;gap:8px;border-radius:6px;min-height:40px;border:1px solid #eee;max-width:48%;">
+        <img src="https://cdn-icons-png.flaticon.com/512/281/281764.png" width="20" style="vertical-align:middle;"> Google
+    </a>
 </div>
 {% endblock %}

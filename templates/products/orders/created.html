@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt hàng thành công</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #fff0f6;
+            color: #ff69b4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #ff69b4;
+            margin-bottom: 20px;
+            font-weight:900;
+            letter-spacing:2px;
+        }
+        .success-box {
+            background: linear-gradient(90deg, #ff69b4 0%, #fff0f6 100%);
+                color: #ff69b4;
+                background: #fff;
+            border: 2px solid #ff69b4;
+            border-radius: 1rem;
+            padding: 28px 20px 20px 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px #ff69b433;
+            }
+            .success-box p, .success-box .order-number, .success-box h1 {
+                color: #ff69b4;
+            }
+        }
+        .order-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #fff;
+            letter-spacing:1px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 28px;
+            background: #ff69b4;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 0.7rem;
+            margin: 10px;
+            font-weight:600;
+            border: none;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn:hover {
+            background: #fff;
+            color: #ff69b4;
+        color: #fff;
+            border: 1px solid #ff69b4;
+                font-weight:600;
+        }
+        .btn-secondary {
+            background: #fff;
+            color: #ff69b4;
+            border: 1px solid #ff69b4;
+        }
+        .btn-secondary:hover {
+            background: #ff69b4;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-box">
+            <h1>Đặt hàng thành công!</h1>
+            <p>Cảm ơn bạn đã đặt hàng tại Cosmetics.</p>
+            <div class="order-number">
+                Mã đơn hàng: #{{ order.id }}
+            </div>
+            <p style="margin:10px 0 0 0;">Đơn hàng của bạn đang chờ admin phê duyệt.</p>
+            <p>Bạn sẽ nhận được thông báo khi đơn hàng được xác nhận và cập nhật trạng thái vận chuyển.</p>
+        </div>
+
+        <div class="actions">
+            <a href="{% url 'product_list' %}" class="btn">Tiếp tục mua sắm</a>
+            <a href="{% url 'order_detail' order.id %}" class="btn btn-secondary">Xem chi tiết đơn hàng</a>
+            <a href="{% url 'user_orders' %}" class="btn btn-secondary">Theo dõi đơn hàng của tôi</a>
+        </div>
+    </div>
+</body>
+</html>

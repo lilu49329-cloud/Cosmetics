@@ -1,0 +1,65 @@
+{% extends 'products/base.html' %}
+{% block title %}Liên hệ | Cosmetics{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4 mb-4">
+    <div class="col-12 col-md-10 col-lg-8">
+        <div class="p-4 rounded shadow-sm" style="background:linear-gradient(90deg,#ff69b4 0%,#221b29 100%);color:#fff;position:relative;">
+            <h2 style="color:#fff;font-weight:bold;letter-spacing:1px;">Liên hệ với chúng tôi</h2>
+            <p style="font-size:1.1rem;">Bạn cần tư vấn, hỗ trợ hoặc góp ý? Hãy liên hệ với <span style="color:#ffb6e6;font-weight:bold;">Cosmetics</span> qua các kênh sau:</p>
+            <ul style="font-size:1.05rem;">
+                <li><strong>Hotline:</strong> 1900 1234</li>
+                <li><strong>Email:</strong> support@cosmeticshop.com</li>
+                <li><strong>Địa chỉ:</strong> 123 Cầu Giấy, Q. Cầu Giấy, Hà Nội</li>
+            </ul>
+            <p>Hoặc gửi thông tin qua form bên dưới, chúng tôi sẽ phản hồi sớm nhất!</p>
+            <form class="row g-3 mt-3" id="contact-form">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Họ tên" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="email" class="form-control" placeholder="Email" required>
+                </div>
+                <div class="col-12">
+                    <textarea class="form-control" rows="4" placeholder="Nội dung liên hệ..." required></textarea>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-auth w-100">Gửi liên hệ</button>
+                </div>
+            </form>
+            <div id="contact-panel" style="position:absolute;top:100%;left:0;width:100%;background:#fff0f6;border:1px solid #ff69b4;border-radius:18px;box-shadow:0 8px 32px rgba(255,105,180,0.18);z-index:9999;display:none;animation:slideDownNotif 0.35s cubic-bezier(.4,2,.6,1);">
+                <div style="padding:24px 20px;text-align:center;color:#d72660;font-size:1.15rem;font-weight:600;">
+                    <i class="bi bi-check-circle-fill" style="font-size:2rem;color:#ff69b4;"></i><br>
+                    Gửi liên hệ thành công! Chúng tôi sẽ phản hồi sớm nhất qua email.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes slideDownNotif {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var contactForm = document.getElementById('contact-form');
+    var contactPanel = document.getElementById('contact-panel');
+    // Hiển thị panel khi gửi form
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        contactPanel.style.display = 'block';
+    });
+    // Đóng panel khi click ra ngoài
+    document.addEventListener('click', function(e) {
+        if (contactPanel.style.display === 'block' && !contactPanel.contains(e.target) && !contactForm.contains(e.target)) {
+            contactPanel.style.display = 'none';
+        }
+    });
+    // Ngăn panel đóng khi click bên trong
+    contactPanel.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+});
+</script>
+{% endblock %}

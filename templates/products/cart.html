@@ -1,0 +1,129 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+{% block title %}Giỏ hàng | Cosmetics{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4 mb-4">
+    <div class="col-12">
+        <h2 class="mb-4 text-center" style="color:#ff69b4;font-weight:bold;">🛒 Giỏ hàng của bạn</h2>
+        {% if cart|length == 0 %}
+            <div class="alert alert-info text-center bg-dark border-0" style="color:#ff69b4;">Giỏ hàng của bạn đang trống.</div>
+            <div class="text-center mt-3">
+                <a href="{% url 'product_list' %}" class="btn btn-auth">Tiếp tục mua sắm</a>
+            </div>
+        {% else %}
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center">
+                <thead style="background:#221b29;color:#ff69b4;">
+                    <tr>
+                        <th>Ảnh</th>
+                        <th>Sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Thành tiền</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart %}
+                    <tr>
+                        <td style="width:80px;">
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded" style="max-height:60px;max-width:60px;">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=80&q=80" alt="{{ item.product.name }}" class="img-fluid rounded" style="max-height:60px;max-width:60px;">
+                            {% endif %}
+                        </td>
+                        <td style="min-width:160px;">
+                            <a href="{% url 'product_detail' item.product.id %}" style="color:#ff69b4;font-weight:bold;">{{ item.product.name }}</a>
+                            <div style="font-size:0.95em;color:#fff0f6;">Thương hiệu: {{ item.product.brand }}</div>
+                        </td>
+                        <td><span style="color:#ff69b4;font-weight:bold;">{{ item.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span></td>
+                        <td>
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <form method="post" action="{% url 'cart_add' item.product.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    {% if item.quantity > 1 %}
+                                        <input type="hidden" name="quantity" value="{{ item.quantity|add:'-1' }}">
+                                    {% else %}
+                                        <input type="hidden" name="quantity" value="1">
+                                    {% endif %}
+                                    <input type="hidden" name="override" value="True">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm px-2" {% if item.quantity <= 1 %}disabled{% endif %}>-</button>
+                                </form>
+                                <input type="number" value="{{ item.quantity }}" class="form-control text-center" style="width:60px;background:#fff0f6;color:#ff69b4;font-weight:bold;border:1.5px solid #ff69b4;" min="1" readonly>
+                                <form method="post" action="{% url 'cart_add' item.product.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" value="{{ item.quantity|add:'1' }}">
+                                    <input type="hidden" name="override" value="True">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm px-2">+</button>
+                                </form>
+                            </div>
+                        </td>
+                        <td><span style="color:#ff69b4;font-weight:bold;">{{ item.total_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span></td>
+                        <td>
+                            <form method="post" action="{% url 'cart_remove' item.product.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+            <a href="{% url 'product_list' %}" class="btn btn-auth">&larr; Tiếp tục mua sắm</a>
+            <div class="fs-4" style="color:#ff69b4;font-weight:bold;">
+                Tổng tiền: 
+                <span>
+                    {{ cart.get_total_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
+                </span>
+            </div>
+            <a href="{% url 'order_create' %}" class="btn btn-auth btn-success">Đặt hàng</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// AJAX update cart: tăng/giảm/xóa sản phẩm không reload trang
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('form[action*="cart_add"], form[action*="cart_remove"]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Cập nhật lại bảng giỏ hàng
+                    if (data.cart_html) {
+                        var parser = new DOMParser();
+                        var doc = parser.parseFromString(data.cart_html, 'text/html');
+                        var newTable = doc.querySelector('table');
+                        var oldTable = document.querySelector('table');
+                        if (newTable && oldTable) {
+                            oldTable.parentNode.replaceChild(newTable, oldTable);
+                        }
+                        // Cập nhật tổng tiền
+                        var newTotal = doc.querySelector('.fs-4 span');
+                        var oldTotal = document.querySelector('.fs-4 span');
+                        if (newTotal && oldTotal) {
+                            oldTotal.innerHTML = newTotal.innerHTML;
+                        }
+                    }
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

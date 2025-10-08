@@ -1,0 +1,71 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+{% block title %}Chi tiết đơn hàng | Cosmetics{% endblock %}
+{% block content %}
+<h2 class="mb-4" style="color:#ff69b4;font-weight:bold;">Chi tiết đơn hàng #{{ order.id }}</h2>
+<div class="mb-3"><strong>Khách hàng:</strong> {{ order.customer.full_name }} ({{ order.customer.email }})</div>
+<div class="mb-3"><strong>Ngày đặt:</strong> {{ order.order_date|date:'d/m/Y H:i' }}</div>
+<div class="mb-3"><strong>Trạng thái:</strong> 
+    <span class="badge 
+        {% if order.status == 'pending' %}bg-warning text-dark
+        {% elif order.status == 'confirmed' %}bg-info text-dark
+        {% elif order.status == 'shipped' %}bg-primary
+        {% elif order.status == 'completed' %}bg-success
+        {% elif order.status == 'canceled' %}bg-danger
+        {% else %}bg-secondary{% endif %}">
+        {{ order.get_status_display }}
+    </span>
+</div>
+<div class="mb-3"><strong>Địa chỉ giao hàng:</strong> {{ order.shipping_address }}</div>
+<div class="mb-3"><strong>Ghi chú:</strong> {{ order.note }}</div>
+
+<!-- Nút phê duyệt đơn hàng riêng cho admin -->
+{% if order.status == 'pending' %}
+<form method="post" style="display:inline-block; margin-bottom:1rem;">
+    {% csrf_token %}
+    <input type="hidden" name="status" value="confirmed">
+    <button type="submit" class="btn btn-success" style="font-weight:bold;background:linear-gradient(90deg,#ff69b4,#c2185b);color:#fff;">
+        <i class="bi bi-check-circle"></i> Phê duyệt đơn hàng
+    </button>
+</form>
+{% endif %}
+
+<!-- Form cập nhật trạng thái đơn hàng cho admin -->
+<form method="post" class="mb-4" style="max-width:400px;">
+    {% csrf_token %}
+    <div class="input-group">
+        <label class="input-group-text" for="id_status" style="background:#ff69b4;color:#fff;font-weight:bold;">Trạng thái</label>
+        <select name="status" id="id_status" class="form-select" style="font-weight:bold;color:#ff69b4;">
+            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Chờ xác nhận</option>
+            <option value="confirmed" {% if order.status == 'confirmed' %}selected{% endif %}>Đã xác nhận</option>
+            <option value="shipped" {% if order.status == 'shipped' %}selected{% endif %}>Đã gửi hàng</option>
+            <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Hoàn thành</option>
+            <option value="canceled" {% if order.status == 'canceled' %}selected{% endif %}>Đã hủy</option>
+        </select>
+        <button type="submit" class="btn btn-auth" style="background:linear-gradient(90deg,#ff69b4,#c2185b);color:#fff;font-weight:bold;">Cập nhật</button>
+    </div>
+</form>
+
+<table class="table table-bordered align-middle text-center mt-4">
+    <thead style="background:#221b29;color:#ff69b4;">
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in order.items.all %}
+        <tr>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.subtotal|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="fs-4 mt-3" style="color:#ff69b4;font-weight:bold;">Tổng tiền: {{ order.total_amount|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></div>
+<a href="{% url 'admin_order_list' %}" class="btn btn-auth mt-4">Quay lại danh sách</a>
+{% endblock %}

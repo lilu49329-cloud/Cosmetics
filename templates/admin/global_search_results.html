@@ -1,0 +1,50 @@
+{% extends "jazzmin/base.html" %}
+{% load static %}
+
+{% block content_title %}
+    <h2>Kết quả tìm kiếm cho: <span style="color:#ff69b4">{{ query }}</span></h2>
+{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom:32px;">
+        {% if not query %}
+            <p>Vui lòng nhập từ khóa để tìm kiếm.</p>
+        {% else %}
+            <h4 style="color:#ff69b4;">Sản phẩm</h4>
+            {% if product_results %}
+                <ul>
+                {% for p in product_results %}
+                    <li><a href="/admin/products/product/{{ p.id }}/change/">{{ p.name }}</a> ({{ p.brand }})</li>
+                {% endfor %}
+                </ul>
+            {% else %}<p>Không tìm thấy sản phẩm phù hợp.</p>{% endif %}
+
+            <h4 style="color:#ff69b4;">Đơn hàng</h4>
+            {% if order_results %}
+                <ul>
+                {% for o in order_results %}
+                    <li><a href="/admin/products/order/{{ o.id }}/change/">Đơn #{{ o.id }} - {{ o.customer.full_name }}</a></li>
+                {% endfor %}
+                </ul>
+            {% else %}<p>Không tìm thấy đơn hàng phù hợp.</p>{% endif %}
+
+            <h4 style="color:#ff69b4;">Khách hàng</h4>
+            {% if customer_results %}
+                <ul>
+                {% for c in customer_results %}
+                    <li><a href="/admin/products/customer/{{ c.id }}/change/">{{ c.full_name }} ({{ c.email }})</a></li>
+                {% endfor %}
+                </ul>
+            {% else %}<p>Không tìm thấy khách hàng phù hợp.</p>{% endif %}
+
+            <h4 style="color:#ff69b4;">Danh mục</h4>
+            {% if category_results %}
+                <ul>
+                {% for cat in category_results %}
+                    <li><a href="/admin/products/category/{{ cat.id }}/change/">{{ cat.name }}</a></li>
+                {% endfor %}
+                </ul>
+            {% else %}<p>Không tìm thấy danh mục phù hợp.</p>{% endif %}
+        {% endif %}
+    </div>
+{% endblock %}

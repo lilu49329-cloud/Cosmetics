@@ -1,0 +1,108 @@
+{% extends 'products/base.html' %}
+{% load widget_tweaks %}
+{% block title %}Tạo đơn hàng{% endblock %}
+{% block content %}
+<h2>Thông tin đặt hàng</h2>
+<form method="post">
+        {% csrf_token %}
+        {% if customer_form.errors %}
+            <div class="alert alert-danger">{{ customer_form.errors }}</div>
+        {% endif %}
+        {% if order_form.errors %}
+            <div class="alert alert-danger">{{ order_form.errors }}</div>
+        {% endif %}
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Khách hàng</h4>
+            {{ customer_form.as_p }}
+        </div>
+        <div class="col-md-6">
+            <h4>Đơn hàng</h4>
+            {# Nếu order_form.payment_method là RadioSelect, style lại và thêm logo #}
+            {% if order_form.payment_method %}
+                <div class="mb-3">
+                    <label for="id_payment_method" class="form-label" style="font-weight:600;">Hình thức thanh toán</label>
+                    <div class="d-flex flex-wrap gap-3 align-items-center mt-2 mb-3">
+                        {% for radio in order_form.payment_method %}
+                            <label class="payment-method border rounded p-2 d-flex align-items-center gap-2" style="cursor:pointer;min-width:160px;background:#fff0f6;position:relative;">
+                                {{ radio.tag }}
+                                {% if radio.choice_value == 'zalopay' %}
+                                    <img src="/static/images/logozalo.png" alt="ZaloPay" style="height:32px;width:auto;object-fit:contain;display:inline-block;vertical-align:middle;">
+                                    <span style="color:#18141c;font-weight:600;">ZaloPay</span>
+                                {% elif radio.choice_value == 'vnpay' %}
+                                    <img src="/static/images/logovnpay.png" alt="VNPay" style="height:32px;width:auto;object-fit:contain;display:inline-block;vertical-align:middle;">
+                                    <span style="color:#18141c;font-weight:600;">VNPay</span>
+                                {% elif radio.choice_value == 'momo' %}
+                                    <img src="https://static.mservice.io/img/logo-momo-200.png" alt="Momo" style="height:32px;width:auto;object-fit:contain;display:inline-block;vertical-align:middle;">
+                                    <span style="color:#18141c;font-weight:600;">Momo</span>
+                                {% elif radio.choice_value == 'cod' %}
+                                    <span style="color:#18141c;font-weight:600;">Thanh toán khi nhận hàng (COD)</span>
+                                {% elif radio.choice_value == 'bank' %}
+                                    <span style="color:#18141c;font-weight:600;">Chuyển khoản ngân hàng</span>
+                                {% elif radio.choice_value == 'credit' %}
+                                    <span style="color:#18141c;font-weight:600;">Thẻ tín dụng/Ghi nợ</span>
+                                {% else %}
+                                    <span style="color:#18141c;font-weight:600;">{{ radio.choice_label }}</span>
+                                {% endif %}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                {{ order_form.as_p }}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4><i class="bi bi-truck" style="color:#ff69b4;"></i> Thông tin giao hàng</h4>
+        <div class="row g-3">
+            <div class="col-12">
+                <label for="id_shipping_address" class="form-label" style="font-weight:600;"><i class="bi bi-geo" style="color:#ff69b4;"></i> Địa chỉ giao hàng (nếu khác)</label>
+                {{ order_form.shipping_address|add_class:"shipping-input" }}
+            </div>
+            <div class="col-12">
+                <label for="id_note" class="form-label" style="font-weight:600;"><i class="bi bi-chat-left-text" style="color:#ff69b4;"></i> Ghi chú cho shop</label>
+                {{ order_form.note|add_class:"shipping-input" }}
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Xác nhận đặt hàng</button>
+    <style>
+        .shipping-input, .shipping-input input, .shipping-input textarea {
+            color: #18141c !important;
+            background: #fff !important;
+            border: 1.5px solid #ff69b4 !important;
+            font-weight: 600;
+        }
+        input, textarea {
+            color: #18141c !important;
+        }
+        .shipping-input::placeholder, .shipping-input input::placeholder, .shipping-input textarea::placeholder {
+            color: #ffb6d5 !important;
+            opacity: 1;
+        }
+    </style>
+</form>
+<h3 class="mt-4">Giỏ hàng</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Sản phẩm</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.price }}₫</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.total_price }}₫</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

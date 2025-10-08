@@ -1,0 +1,66 @@
+/* Cosmetic Shop Admin - Pink & Black Theme */
+body, .content, .main-header, .main-sidebar, .main-footer, .navbar, .sidebar, .card, .modal-content {
+    font-family: 'Montserrat', Arial, sans-serif !important;
+}
+
+/* Sidebar, header, footer background */
+.main-header, .main-sidebar, .main-footer, .navbar, .sidebar {
+    background: #221b29 !important;
+    color: #fff !important;
+}
+
+/* Brand color, highlight */
+:root {
+    --jazzmin-primary: #ff69b4;
+    --jazzmin-secondary: #221b29;
+}
+
+a, .nav-link, .sidebar-menu .nav-link, .sidebar-menu .active > .nav-link {
+    color: #ff69b4 !important;
+}
+
+.btn, .btn-primary, .btn-outline-primary, .btn-auth {
+    background: linear-gradient(90deg, #ff69b4 60%, #221b29 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 20px !important;
+    font-weight: 600;
+}
+
+.btn:hover, .btn-primary:hover, .btn-outline-primary:hover, .btn-auth:hover {
+    background: linear-gradient(90deg, #221b29 0%, #ff69b4 100%) !important;
+    color: #fff !important;
+}
+
+.sidebar-menu .nav-link.active, .sidebar-menu .nav-link:hover {
+    background: #ff69b4 !important;
+    color: #fff !important;
+    border-radius: 8px;
+}
+
+.card, .modal-content {
+    border-radius: 16px !important;
+    box-shadow: 0 4px 18px 0 rgba(255,105,180,0.10), 0 1.5px 4px 0 rgba(34,27,41,0.08);
+}
+
+.table th {
+    background: #221b29 !important;
+    color: #ff69b4 !important;
+}
+
+.table td {
+    color: #221b29 !important;
+}
+
+h1, h2, h3, h4, h5, h6, .brand-text, .main-header .logo {
+    color: #ff69b4 !important;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ff69b4 !important;
+}
+::-webkit-scrollbar-track {
+    background: #221b29 !important;
+}

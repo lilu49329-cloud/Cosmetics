@@ -1,0 +1,79 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block extrastyle %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    {{ block.super }}
+    <link rel="icon" type="image/png" href="{% static 'images/logoshop.png' %}">
+{% endblock %}
+
+{% block branding %}
+    {{ block.super }}
+    <div style="position:absolute;top:18px;right:32px;z-index:999;">
+        <button id="lang-settings-btn" type="button" style="background:none;border:none;cursor:pointer;outline:none;">
+            <i class="fas fa-cog" style="font-size:1.5rem;color:#ff69b4;"></i>
+        </button>
+    </div>
+    <div id="lang-modal-bg" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.2);z-index:2000;"></div>
+    <div id="lang-modal" style="display:none;position:fixed;top:80px;right:60px;z-index:3000;background:#fff;padding:24px 32px;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.15);min-width:260px;">
+        <h4 style="margin-bottom:18px;color:#ff69b4;font-weight:bold;">Language Settings</h4>
+        <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+            <select name="language" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #ff69b4;font-size:1rem;">
+                {% get_current_language as LANGUAGE_CODE %}
+                {% get_available_languages as LANGUAGES %}
+                {% for lang in LANGUAGES %}
+                    <option value="{{ lang.0 }}"{% if lang.0 == LANGUAGE_CODE %} selected{% endif %}>{{ lang.1 }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" style="margin-top:16px;width:100%;background:#ff69b4;color:#fff;border:none;padding:8px 0;border-radius:6px;font-size:1.1rem;font-weight:bold;">Apply</button>
+        </form>
+        <button id="lang-modal-close" type="button" style="margin-top:12px;width:100%;background:#eee;color:#333;border:none;padding:6px 0;border-radius:6px;font-size:1rem;">Cancel</button>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('lang-settings-btn');
+            var modal = document.getElementById('lang-modal');
+            var bg = document.getElementById('lang-modal-bg');
+            var close = document.getElementById('lang-modal-close');
+            btn && btn.addEventListener('click', function(e) {
+                modal.style.display = 'block';
+                bg.style.display = 'block';
+            });
+            close && close.addEventListener('click', function() {
+                modal.style.display = 'none';
+                bg.style.display = 'none';
+            });
+            bg && bg.addEventListener('click', function() {
+                modal.style.display = 'none';
+                bg.style.display = 'none';
+            });
+        });
+    </script>
+{% endblock %}
+
+
+{% block content_title %}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+        <form method="get" action="/admin/search/" style="display:flex;align-items:center;">
+            <input type="text" name="q" placeholder="Tìm kiếm sản phẩm, đơn hàng, khách hàng..." style="width:400px;padding:8px 16px;border-radius:20px 0 0 20px;border:1px solid #ff69b4;font-size:1.1rem;outline:none;">
+            <button type="submit" style="background:#ff69b4;border:none;border-radius:0 20px 20px 0;padding:8px 18px;color:#fff;font-weight:bold;font-size:1.1rem;cursor:pointer;">
+                <i class="fas fa-search"></i> Tìm kiếm
+            </button>
+        </form>
+        <form action="{% url 'set_language' %}" method="post" style="margin-left:16px;">{% csrf_token %}
+            <select name="language" onchange="this.form.submit()" style="padding:6px 12px;border-radius:6px;border:1px solid #ff69b4;font-size:1rem;">
+                {% get_current_language as LANGUAGE_CODE %}
+                {% get_available_languages as LANGUAGES %}
+                {% for lang in LANGUAGES %}
+                    <option value="{{ lang.0 }}"{% if lang.0 == LANGUAGE_CODE %} selected{% endif %}>{{ lang.1 }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    {{ block.super }}
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+{% endblock %}
