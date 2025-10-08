@@ -7,3 +7,4 @@ Django>=5.2.5
 sqlparse
 asgiref
 pytz
+django-jazzmin

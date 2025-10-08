@@ -1,4 +1,11 @@
+
 # Chatbot AI Cosmetics
+## Giao diện quản trị hiện đại với Jazzmin
+
+1. Đã cài đặt sẵn Jazzmin trong dự án (xem requirements.txt và INSTALLED_APPS trong settings.py).
+2. Giao diện admin sẽ tự động đẹp, hiện đại khi truy cập /admin.
+3. Nếu muốn tùy chỉnh thêm, xem tài liệu: https://django-jazzmin.readthedocs.io/
+
 
 ## Hướng dẫn cấu hình AI thật (OpenAI)
 
