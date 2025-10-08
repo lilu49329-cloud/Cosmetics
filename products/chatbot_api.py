@@ -41,9 +41,22 @@ def find_faq_by_question(message, faqs):
 
 
 def find_product_info(message):
-    # Tìm sản phẩm theo tên hoặc từ khóa trong message
-    products = Product.objects.filter(is_active=True)
     msg = message.lower()
+    products = Product.objects.filter(is_active=True)
+    # Tìm theo xuất xứ/thương hiệu quốc gia
+    countries = ['mỹ', 'hàn quốc', 'đức', 'pháp', 'nhật', 'trung', 'thái', 'anh', 'canada', 'italia', 'ý', 'tây ban nha']
+    for country in countries:
+        if country in msg:
+            ps = products.filter(brand_origin__icontains=country)
+            if ps.exists():
+                plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ | Xuất xứ: {p.brand_origin}" for p in ps[:5]])
+                return f"Các sản phẩm xuất xứ từ {country.title()} của shop:\n{plist}"
+            else:
+                # Nếu không có sản phẩm khớp hoàn toàn, lấy các sản phẩm có brand_origin không rỗng
+                ps = products.exclude(brand_origin__isnull=True).exclude(brand_origin__exact='')
+                if ps.exists():
+                    plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ | Xuất xứ: {p.brand_origin}" for p in ps[:5]])
+                    return f"Một số sản phẩm và xuất xứ của shop:\n{plist}"
     # Nếu hỏi về đặt hàng, trả lời tự động
     if any(kw in msg for kw in ['đặt hàng', 'mua', 'order', 'cách mua', 'cách đặt']):
         return "Bạn chỉ cần chọn sản phẩm, nhấn Mua ngay và điền thông tin để hoàn tất đơn hàng. Nếu cần hỗ trợ, hãy liên hệ shop!"
@@ -64,13 +77,19 @@ def find_product_info(message):
                 plist = ', '.join([p.name for p in ps[:5]])
                 return f"Các sản phẩm của {brand}: {plist}"
     # Tìm theo loại da
-    skin_types = ['dầu', 'khô', 'hỗn hợp', 'nhạy cảm', 'mọi loại da']
+    skin_types = ['dầu', 'da dầu', 'oil', 'oil skin', 'khô', 'da khô', 'hỗn hợp', 'nhạy cảm', 'mọi loại da']
     for st in skin_types:
         if st in msg:
             ps = products.filter(skin_type__icontains=st)
             if ps.exists():
-                plist = ', '.join([p.name for p in ps[:5]])
-                return f"Sản phẩm phù hợp cho da {st}: {plist}"
+                plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ" for p in ps[:5]])
+                return f"Các sản phẩm phù hợp cho da {st} của shop:\n{plist}"
+            else:
+                # Nếu không có sản phẩm khớp hoàn toàn, lấy các sản phẩm có skin_type không rỗng
+                ps = products.exclude(skin_type__isnull=True).exclude(skin_type__exact='')
+                if ps.exists():
+                    plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ | Loại da: {p.skin_type}" for p in ps[:5]])
+                    return f"Một số sản phẩm và loại da phù hợp:\n{plist}"
     # Nếu hỏi về cách liên hệ
     if any(kw in msg for kw in ['liên hệ', 'tư vấn', 'gặp nhân viên', 'hỗ trợ']):
         return "Bạn có thể liên hệ shop qua hotline, fanpage hoặc chat trực tiếp với nhân viên tư vấn ở góc phải màn hình."
