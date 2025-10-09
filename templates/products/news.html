@@ -1,23 +1,81 @@
 {% extends 'products/base.html' %}
 {% block title %} News | Cosmetics{% endblock %}
 {% block content %}
-<div class="container my-4 py-4" style="background:linear-gradient(90deg,#ff69b4 0%,#fff0f6 100%); border-radius: 1rem; color: #f7f6f8ff; box-shadow: 0 2px 8px #ff69b4;">
-    <h1 class="mb-4" style="color:#ffffff;font-weight:bold;letter-spacing:2px;">📰  News</h1>
-    <p>Tin tức mới nhất về mỹ phẩm, làm đẹp, xu hướng:</p>
-    {# Tin tức sẽ được đăng qua trang admin Django, không hiển thị form cho người dùng #}
-    <ul class="list-group mb-4">
+<style>
+    body {
+        background: #f0f2f5;
+    }
+    .news-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .news-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+    }
+    .news-img {
+        width: 100%;
+        height: auto;  /* ảnh giữ nguyên tỉ lệ, không bị crop */
+        display: block;
+    }
+    .news-body {
+        padding: 1rem 1.5rem 1.5rem 1.5rem;
+    }
+    .news-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #d81b60;
+        margin-bottom: 0.3rem;
+    }
+    .news-date {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 1rem;
+        display: block;
+    }
+    .news-content {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #222;
+        margin-bottom: 0.5rem;
+        white-space: pre-line;
+    }
+</style>
+
+<div class="container my-4" style="max-width: 720px;">
+    <h1 class="mb-4 text-center" style="color:#d81b60;font-weight:700;letter-spacing:1px;">
+        📰 Tin tức mới nhất
+    </h1>
+    <div class="row">
     {% for news in news_list %}
-    <li class="list-group-item" style="background:#fff0f6;color:#18141c;">
-        <div style="font-weight:600;">{{ news.title }} <span style="font-size:0.95rem;color:#888;">- {{ news.created_at|date:'d/m/Y' }}</span></div>
-        <div style="font-size:0.97rem;">{{ news.content }}</div>
-    </li>
+        <div class="col-12">
+            <div class="news-card">
+                {% if news.image %}
+                    <img src="{{ news.image.url }}" alt="{{ news.title }}" class="news-img">
+                {% endif %}
+                <div class="news-body">
+                    <div class="news-title">{{ news.title }}</div>
+                    <span class="news-date">{{ news.created_at|date:'d/m/Y' }}</span>
+                    <div class="news-content">{{ news.content }}</div>
+                </div>
+            </div>
+        </div>
     {% empty %}
-    <li class="list-group-item" style="background:#fff0f6;color:#18141c;">Chưa có tin tức nào.</li>
+        <div class="col-12">
+            <div class="news-card text-center" style="padding:2rem;">
+                Chưa có tin tức nào.
+            </div>
+        </div>
     {% endfor %}
-    </ul>
-    <a href="{% url 'product_list' %}" class="btn btn-auth" style="color:#fff !important;">Khám phá sản phẩm</a>
-    <div class="mt-4 text-center">
-        <a href="{% url 'home' %}" class="btn btn-outline-primary" style="color:#fff !important;">← Về trang chủ</a>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'product_list' %}" class="btn btn-primary px-4 me-2">Khám phá sản phẩm</a>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4">← Về trang chủ</a>
     </div>
 </div>
 {% endblock %}

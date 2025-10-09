@@ -5,16 +5,27 @@
 {% block extrastyle %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     {{ block.super }}
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="{% static 'images/logoshop.png' %}">
 {% endblock %}
 
 {% block branding %}
-    {{ block.super }}
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;">
+        <!-- Logo -->
+        <img src="{% static 'images/logoshop.png' %}" alt="Logo Shop" style="height:40px;width:auto;">
+        <h1 id="site-name" style="font-size:1.5rem;color:#ff69b4;font-weight:bold;margin:0;">
+            My Cosmetics Admin
+        </h1>
+    </div>
+
+    <!-- Nút mở settings -->
     <div style="position:absolute;top:18px;right:32px;z-index:999;">
         <button id="lang-settings-btn" type="button" style="background:none;border:none;cursor:pointer;outline:none;">
             <i class="fas fa-cog" style="font-size:1.5rem;color:#ff69b4;"></i>
         </button>
     </div>
+
+    <!-- Modal chọn ngôn ngữ -->
     <div id="lang-modal-bg" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.2);z-index:2000;"></div>
     <div id="lang-modal" style="display:none;position:fixed;top:80px;right:60px;z-index:3000;background:#fff;padding:24px 32px;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.15);min-width:260px;">
         <h4 style="margin-bottom:18px;color:#ff69b4;font-weight:bold;">Language Settings</h4>
@@ -51,7 +62,6 @@
         });
     </script>
 {% endblock %}
-
 
 {% block content_title %}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">

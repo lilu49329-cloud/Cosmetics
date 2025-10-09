@@ -184,9 +184,8 @@ def flash_sale(request):
     return redirect('flash_sale_list')
 
 def news(request):
-    news_list = [
-        {'title': 'Ra mắt sản phẩm mới', 'content': 'Chi tiết về sản phẩm mới...'},
-    ]
+    from .models import News
+    news_list = News.objects.all().order_by('-created_at')
     return render(request, 'products/news.html', {'news_list': news_list})
 
 def brands(request):
