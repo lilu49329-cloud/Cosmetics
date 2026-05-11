@@ -1,3 +1,32 @@
+# Đánh giá sản phẩm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from .models import Product, Review
+from django.views.decorators.http import require_POST
+
+@login_required
+@require_POST
+def review_create(request, product_id):
+    from django.http import JsonResponse
+    product = get_object_or_404(Product, id=product_id)
+    rating = int(request.POST.get('rating', 0))
+    comment = request.POST.get('comment', '').strip()
+    if rating and comment:
+        review = Review.objects.create(product=product, user=request.user, rating=rating, comment=comment)
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'review': {
+                    'user_name': request.user.get_full_name() or request.user.username,
+                    'rating': review.rating,
+                    'comment': review.comment,
+                    'created_at': review.created_at.strftime('%d/%m/%Y'),
+                }
+            })
+        return redirect('product_detail', id=product.id)
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'Bạn cần nhập đủ số sao và bình luận.'})
+    return redirect('product_detail', id=product.id)
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
@@ -10,6 +39,7 @@ from .models import Product, Category, Customer, Order, OrderItem, Notification,
 from .forms import ProductForm, ProductSearchForm, CartAddProductForm, CustomerForm, OrderForm
 from .cart import Cart
 from django.utils import timezone
+from django.db import models
 
 @login_required
 def user_update(request):
@@ -47,6 +77,7 @@ from django.contrib.auth.decorators import login_required
 def notifications_api(request):
     notifications = []
     user = request.user
+    Notification.objects.filter(user=user, is_read=False).update(is_read=True)
     if user.is_authenticated:
         notifications_qs = Notification.objects.filter(user=user).order_by('-created_at')[:10]
         notifications = [
@@ -133,6 +164,23 @@ def flash_sale_list(request):
         'categories': categories,
         'hotdeal_banners': hotdeal_banners,
     })
+def some_view(request):
+    categories = Category.objects.all()
+    # các dữ liệu khác
+    return render(request, 'products/home.html', {
+        'categories': categories,
+        # các dữ liệu khác
+    })
+def category_products(request, id):
+    category = get_object_or_404(Category, id=id)
+    products = Product.objects.filter(category=category, is_active=True)
+    categories = Category.objects.all()  # dùng để hiển thị menu dropdown
+    return render(request, 'products/category_products.html', {
+        'category': category,
+        'products': products,
+        'categories': categories
+    })
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.db.models import Q
@@ -305,12 +353,15 @@ def home(request):
             'discount_percent': discount_percent,
         })
     cart = Cart(request)
+    from .models import Slider
+    sliders = Slider.objects.filter(is_active=True).order_by('-created_at')
     return render(request, 'products/home.html', {
         'products': products,
         'categories': categories,
         'hot_products': hot_products,
         'flash_sale_products': flash_sale_products,
         'cart': cart,
+        'sliders': sliders,
     })
 
 def product_list(request):
@@ -326,12 +377,33 @@ def product_detail(request, id):
     if product.original_price and product.original_price > product.price:
         discount_amount = product.original_price - product.price
         discount_percent = round(100 * (product.original_price - product.price) / product.original_price)
+    # Lấy các sản phẩm cùng thương hiệu
+    related_products = Product.objects.filter(brand=product.brand, is_active=True).exclude(id=product.id)[:8]
+    # Tính discount_percent cho từng sản phẩm đề xuất
+    suggested_products = []
+    for sp in related_products:
+        discount_percent = None
+        if sp.original_price and sp.original_price > sp.price:
+            discount_percent = round(100 * (sp.original_price - sp.price) / sp.original_price)
+        sp.discount_percent = discount_percent
+        suggested_products.append(sp)
+    # Lấy review mới nhất đầu tiên
+    reviews = product.reviews.order_by('-created_at')
+    review_count = reviews.count()
+    average_rating = reviews.aggregate(avg=models.Avg('rating'))['avg'] or 0
+    from django.db.models import Sum
+    sold_count = product.order_items.aggregate(total=Sum('quantity'))['total'] or 0
     return render(request, 'products/product_detail.html', {
         'product': product,
         'form': form,
         'discount_amount': discount_amount,
         'discount_percent': discount_percent,
-        # 'recommended_products': [],
+        'related_products': related_products,
+        'suggested_products': suggested_products,
+        'reviews': reviews,
+        'average_rating': average_rating,
+        'review_count': review_count,
+        'sold_count': sold_count,
     })
 
 def product_create(request):
@@ -509,11 +581,17 @@ def user_dashboard(request):
 
 @login_required
 def user_orders(request):
-    try:
-        customer = Customer.objects.get(email=request.user.email)
-        orders = Order.objects.filter(customer=customer).order_by('-order_date')
-    except Customer.DoesNotExist:
-        orders = []
+    from .models import Order, Customer
+    orders = []
+    # Ưu tiên lấy theo user nếu có liên kết
+    if hasattr(request.user, 'customer'):
+        orders = Order.objects.filter(customer=request.user.customer).order_by('-order_date')
+    else:
+        try:
+            customer = Customer.objects.get(email=request.user.email)
+            orders = Order.objects.filter(customer=customer).order_by('-order_date')
+        except Customer.DoesNotExist:
+            orders = []
     return render(request, 'products/user_orders.html', {'orders': orders})
 
 from django.shortcuts import render, redirect
@@ -542,13 +620,15 @@ def product_search(request):
         products = Product.objects.filter(
             Q(name__icontains=query) |
             Q(description__icontains=query) |
-            Q(brand__icontains=query)
+            Q(brand__name__icontains=query)   # ✅ Sửa chỗ này
         ).distinct()
+
     return render(request, 'products/product_search_results.html', {
         'query': query,
         'products': products,
         'categories': categories,
     })
+
 
 from django.contrib.auth.decorators import login_required
 from .models import Notification

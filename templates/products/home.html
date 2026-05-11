@@ -44,6 +44,7 @@
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
                 {% for product in flash_sale_products %}
                 <div class="col">
+                    <a href="{% url 'product_detail' product.id %}" style="text-decoration:none; color:inherit;">
                     <div class="card product-card h-100 position-relative" style="border:2px solid #ff69b4; border-radius:1.2rem;">
                         {% if product.brand %}
                         <span class="position-absolute top-0 end-0 m-2" style="font-size:0.9rem;color:#ff69b4;font-weight:bold;z-index:2;">{{ product.brand }}</span>
@@ -60,7 +61,7 @@
                             <div class="mb-1" style="font-size:0.95rem;color:#888;">{{ product.description|truncatechars:40 }}</div>
                             <div class="d-flex align-items-center gap-2 mb-1">
                                 <span class="fw-bold" style="color:#f44336;font-size:1.1rem;">{{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
-                                {% if product.original_price and product.original_price > product.price %}
+                                {% if product.original_price %}
                                     <span class="text-decoration-line-through text-muted" style="font-size:0.95rem;">{{ product.original_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
                                 {% endif %}
                             </div>
@@ -81,6 +82,7 @@
                             </button>
                         </form>
                     </div>
+                    </a>
                 </div>
                 {% empty %}
                 <div class="col-12 text-center text-muted">Chưa có sản phẩm Flash Sale.</div>
@@ -142,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData
             })
             .then(res => res.json())
-                    .then(data => {
+                    .then data => {
                         // Hiển thị toast
                         var toast = document.getElementById('cart-toast');
                         if (toast) {
@@ -246,42 +248,51 @@ document.addEventListener('DOMContentLoaded', function() {
             <h3 style="color:#ff69b4;font-weight:bold;">Sản phẩm mới</h3>
             <a href="{% url 'product_list' %}" class="btn btn-auth btn-sm">Xem tất cả sản phẩm</a>
         </div>
-        <div class="row">
+        <div class="row g-3">
             {% for product in products %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm" style="background:#fff;border:1px solid #ff69b4;color:#18141c; cursor:pointer; position:relative;">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="card h-100 shadow-sm position-relative" style="border:2px solid #ff69b4; border-radius:1.2rem; cursor:pointer;">
                     <a href="{% url 'product_detail' product.id %}" style="text-decoration:none; color:inherit;">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                        {% else %}
-                        <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80" class="card-img-top" alt="{{ product.name }}">
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title" style="color:#ff69b4;">{{ product.name }}</h5>
-                            <p class="card-text">Thương hiệu: <span style="color:#fff0f6">{{ product.brand }}</span></p>
-                            <p class="card-text">
-                                <strong style="color:#ff69b4" class="d-flex align-items-center gap-2">
-                                    {% if product.sale_price %}
-                                        {{ product.sale_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
-                                        <span style="color:#888;font-size:1rem;text-decoration:line-through; margin-left:8px;">{{ product.price|intcomma }}₫</span>
-                                    {% else %}
-                                        {{ product.price|intcomma }}₫
-                                    {% endif %}
-                                </strong>
-                            </p>
+                        <div class="position-absolute" style="top:10px;right:10px;z-index:2;">
+                            {% if product.discount and product.discount > 0 %}
+                            <span class="badge bg-danger" style="font-size:1rem;">-{{ product.discount }}%</span>
+                            {% endif %}
+                        </div>
+                        <div style="background:#fff0f6; border-radius:1rem 1rem 0 0; padding:10px; min-height:220px; display:flex;align-items:center;justify-content:center;">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width:100%;max-height:180px;object-fit:contain;">
+                            {% else %}
+                            <img src="https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?auto=format&fit=crop&w=400&q=80" alt="{{ product.name }}" style="max-width:100%;max-height:180px;object-fit:contain;">
+                            {% endif %}
                         </div>
                     </a>
-                    <form method="post" action="{% url 'cart_add' product.id %}" class="position-absolute bottom-0 end-0 m-2" style="z-index:3;">
-                        {% csrf_token %}
-                        <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn p-0" style="background:none;border:none;outline:none;">
-                            <i class="bi bi-cart-plus" style="font-size:1.5rem; color:#ff69b4;" title="Thêm vào giỏ hàng"></i>
-                        </button>
-                    </form>
+                    <div class="card-body pb-2 pt-3" style="background:#fff; border-radius:0 0 1rem 1rem;">
+                        <div style="font-size:1.2rem; color:#ff69b4; font-weight:700;" class="d-flex align-items-center gap-2">
+                            {% if product.sale_price %}
+                                {{ product.sale_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
+                                <span style="color:#888;font-size:1rem;text-decoration:line-through; margin-left:8px;">{{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
+                            {% else %}
+                                {{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{% url 'cart_add' product.id %}" class="position-absolute bottom-0 end-0 m-2" style="z-index:3;">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn p-0" style="background:none;border:none;outline:none;">
+                                <i class="bi bi-cart-plus" style="font-size:1.5rem; color:#ff69b4;" title="Thêm vào giỏ hàng"></i>
+                            </button>
+                        </form>
+                        <div style="font-size:0.95rem; font-weight:700; color:#221b29; margin-top:2px;">{{ product.brand|upper }}</div>
+                        <div style="font-size:1rem; color:#221b29; font-weight:500; margin-bottom:4px;">{{ product.name }}</div>
+                        <div style="font-size:0.97rem; color:#444; min-height:38px;">{{ product.description|truncatewords:12 }}</div>
+                        {% if product.has_gift %}
+                        <span class="badge bg-success mt-2">Quà tặng</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             {% empty %}
-            <p class="text-center">Chưa có sản phẩm nào.</p>
+            <div class="col-12 text-center text-muted">Chưa có sản phẩm nào.</div>
             {% endfor %}
         </div>
     </div>

@@ -1,7 +1,13 @@
-
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Category, Product, Customer, Order, ProductImage, HotDealBanner, News, Brand, Store, FAQ, ChatHistory
+from .models import Category, Product, Customer, Order, ProductImage, HotDealBanner, Brand, Store, FAQ, ChatHistory, News
+from .models import Slider
+# Đăng ký Slider vào admin (thủ công, không drag & drop)
+@admin.register(Slider)
+class SliderAdmin(admin.ModelAdmin):
+	list_display = ('title', 'is_active', 'sort_order', 'created_at')
+	search_fields = ('title', 'description')
+	list_filter = ('is_active',)
 
 # Đăng ký FAQ và ChatHistory vào admin
 @admin.register(FAQ)
@@ -43,7 +49,7 @@ class ProductAdmin(admin.ModelAdmin):
 	list_display_links = ("thumbnail", "name")
 	list_editable = ("is_active", "is_hot")
 	list_filter = ("category", "brand", "is_active", "is_hot")
-	search_fields = ("name", "brand", "category__name", "description")
+	search_fields = ("name", "brand__name", "category__name", "description")
 	list_per_page = 20
 	inlines = [ProductImageInline]
 	fieldsets = (
@@ -87,7 +93,17 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 # Đăng ký ProductImage (không cần search)
-admin.site.register(ProductImage)
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+	list_display = ("image_preview", "product", "alt_text", "uploaded_at")
+	readonly_fields = ("image_preview",)
+	search_fields = ("alt_text", "product__name")
+	list_filter = ("product",)
+	def image_preview(self, obj):
+		if obj.image:
+			return format_html('<img src="{}" style="max-height:60px;max-width:60px;border-radius:8px;box-shadow:0 2px 8px #ff69b4;"/>', obj.image.url)
+		return ""
+	image_preview.short_description = "Xem trước ảnh phụ"
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
 	list_display = ("id", "customer", "order_date", "status", "total_amount")
@@ -172,14 +188,21 @@ class HotDealBannerAdmin(admin.ModelAdmin):
         return ""
     image_preview.short_description = "Xem trước ảnh"
 
-from django.contrib import admin
-from .models import News
-
+# Đăng ký News vào admin
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
-    search_fields = ('title', 'content')
-    list_filter = ('created_at',)
-    ordering = ('-created_at',)
+    list_display = ("title", "created_at", "image")
+    readonly_fields = ("created_at",)
+    fieldsets = (
+        (None, {
+            "fields": ("title", "content", "image")
+        }),
+        ("Thời gian", {
+            "fields": ("created_at",),
+            "classes": ("collapse",)
+        })
+    )
+
+
 
 

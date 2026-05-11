@@ -3,4 +3,18 @@
   "model": "products.store",
   "pk": 1,
   "fields": {
-    "name": 
+    "name": "Cosmetics Hà Đông",
+    "address": "637-593 QL6, Phú La, Hà Đông, Hà Nội, Việt Nam",
+    "phone": "0368 386 605"
+  }
+},
+{
+  "model": "products.store",
+  "pk": 2,
+  "fields": {
+    "name": "Cosmetics Lê Văn Lương",
+    "address": "Đ. Lê Văn Lương,Nhân Chính, Thanh Xuân, Hà Nội 100000, Việt Nam",
+    "phone": "0375 2003 97"
+  }
+}
+]

@@ -1,6 +1,6 @@
 {% extends 'products/base.html' %}
 {% load humanize %}
-
+<head><meta charset="UTF-8"></head>
 {% block title %}Flash Sale | Cosmetics{% endblock %}
 {% block content %}
 
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="mb-1" style="font-size:0.95rem;color:#888;">{{ product.description|truncatechars:40 }}</div>
                             <div class="d-flex align-items-center gap-2 mb-1">
                                 <span class="fw-bold" style="color:#f44336;font-size:1.1rem;">{{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
-                                {% if product.original_price and product.original_price > product.price %}
+                                {% if product.original_price %}
                                 <span class="text-decoration-line-through text-muted" style="font-size:0.95rem;">{{ product.original_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
                                 {% endif %}
                             </div>

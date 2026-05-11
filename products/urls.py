@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('products/', views.product_list, name='product_list'),
     path('products/<int:id>/', views.product_detail, name='product_detail'),
+    path('products/<int:product_id>/review/', views.review_create, name='product_review'),
     path('cart/', views.cart_detail, name='cart_detail'),
     path('cart/add/<int:product_id>/', views.cart_add, name='cart_add'),
     path('cart/remove/<int:product_id>/', views.cart_remove, name='cart_remove'),
@@ -36,6 +37,7 @@ urlpatterns = [
     path('password-reset/', password_reset_request, name='password_reset_request'),
     path('password-reset/otp/', password_otp_verify, name='password_otp_verify'),
     path('password-reset/confirm/', password_reset_confirm, name='password_reset_confirm'),
+    path('category/<int:id>/', views.category_products, name='category_products'),
 
     # API endpoint cho chatbot
     path('api/chatbot/', chatbot_api, name='chatbot_api'),

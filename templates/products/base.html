@@ -389,8 +389,17 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav w-100 d-flex align-items-center gap-2">
-                    <li class="nav-item"><a class="btn btn-auth dropdown-toggle" style="background:#fff;color:#ff69b4;border:1px solid #ff69b4;" href="#" role="button" data-bs-toggle="dropdown">Danh mục sản phẩm</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'flash_sale' %}#hotdeals">KHUYẾN MÃI</a></li>
+                                    <li class="nav-item dropdown">
+                    <a class="btn btn-auth dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Danh mục sản phẩm
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% for category in categories %}
+                        <li><a class="dropdown-item" href="{% url 'category_products' category.id %}">{{ category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'flash_sale' %}"hotdeals">KHUYẾN MÃI</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'flash_sale' %}">FLASH SALE</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'news' %}">NEWS</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'brands' %}">THƯƠNG HIỆU</a></li>
@@ -402,30 +411,34 @@
     </nav>
     {% endif %}
     {% if request.path == '/' %}
-    <!-- Slider trình chiếu ở chính giữa bên dưới menu -->
+    <!-- Slider/Banner động nhập từ admin -->
+    {% if sliders %}
     <div class="container mb-4">
-        <div id="mainCarousel" class="carousel slide mx-auto" data-bs-ride="carousel" style="max-width:900px;">
+        <div id="main-slider" class="carousel slide mx-auto" data-bs-ride="carousel" style="max-width:900px;">
             <div class="carousel-inner rounded shadow">
-                <div class="carousel-item active">
-                    <img src="/static/images/1.png" class="d-block w-100" alt="Slide 1" style="height:380px;object-fit:cover;border-radius:24px;">
+                {% for slider in sliders %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img src="{{ slider.image.url }}" class="d-block w-100" alt="{{ slider.title }}" style="height:380px;object-fit:cover;border-radius:24px;">
+                    {% if slider.title or slider.description %}
+                    <div class="carousel-caption d-none d-md-block" style="background:rgba(255,255,255,0.7);border-radius:1rem;padding:1rem;">
+                        {% if slider.title %}<h5 style="color:#ff69b4;font-weight:bold;">{{ slider.title }}</h5>{% endif %}
+                        {% if slider.description %}<p style="color:#221b29;">{{ slider.description }}</p>{% endif %}
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="carousel-item">
-                    <img src="/static/images/2.jpg" class="d-block w-100" alt="Slide 2" style="height:380px;object-fit:cover;border-radius:24px;">
-                </div>
-                <div class="carousel-item">
-                    <img src="/static/images/5.jpg" class="d-block w-100" alt="Slide 3" style="height:380px;object-fit:cover;border-radius:24px;">
-                </div>
+                {% endfor %}
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+            <button class="carousel-control-prev" type="button" data-bs-target="#main-slider" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Previous</span>
             </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+            <button class="carousel-control-next" type="button" data-bs-target="#main-slider" data-bs-slide="next">
                 <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 <span class="visually-hidden">Next</span>
             </button>
         </div>
     </div>
+    {% endif %}
     {% endif %}
 
         <!-- Thông báo nổi khi thêm vào giỏ hàng -->
@@ -555,7 +568,7 @@
             });
 
         </script>
-
+            {% block extra_js %}{% endblock %}
 <!-- Chatbot Widget -->
 <style>
 #chatbot-widget {

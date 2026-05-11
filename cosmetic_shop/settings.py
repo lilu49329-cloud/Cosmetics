@@ -160,16 +160,14 @@ WSGI_APPLICATION = 'cosmetic_shop.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cosmetic_db',
-        'USER': 'postgres',
-        'PASSWORD': 'Ly07052003',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default='postgresql://neondb_owner:npg_YfpNDZ0AJvG4@ep-icy-surf-apdzz3lg-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'
+    )
 }
+
 
 # Ensure the correct path to psql.exe is used for database management
 PSQL_PATH = r'C:\Users\admin\Downloads\postSQL\pgAdmin 4\runtime\psql.exe'
