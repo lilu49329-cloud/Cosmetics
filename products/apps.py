@@ -7,6 +7,8 @@ class ProductsConfig(AppConfig):
 
     def ready(self):
         import os
-        if os.environ.get('RUN_MAIN') == 'true':
+        import sys
+        # Không chạy scheduler khi đang migrate hoặc chạy lệnh quản lý khác
+        if os.environ.get('RUN_MAIN') == 'true' and 'manage.py' in sys.argv and 'runserver' in sys.argv:
             from products.tasks import start_scheduler
             start_scheduler()

@@ -1,4 +1,5 @@
 {% extends 'products/base.html' %}
+{% load humanize %}
 {% block title %}Đơn hàng của bạn | Cosmetics{% endblock %}
 {% block content %}
 <div class="container my-4 py-4" style="background: #ff69b4; border-radius: 1rem; color: #fff0f6; box-shadow: 0 2px 8px #ff69b4;">
@@ -23,7 +24,7 @@
                                 <tr style="border:none; background:rgba(255,240,246,0.95); color:#221b29;">
                                     <td style="border:none; background:transparent;">#{{ order.id }}</td>
                                     <td style="border:none; background:transparent;">{{ order.order_date|date:"d/m/Y H:i" }}</td>
-                                    <td style="border:none; background:transparent;">{{ order.total_amount|floatformat:0 }}₫</td>
+                                    <td style="border:none; background:transparent;">{{ order.total_amount|floatformat:0|intcomma }}₫</td>
                                     <td style="border:none; background:transparent;">
                                         {% if order.status == 'pending' %}
                                             <span class="badge bg-warning text-dark">Chờ xác nhận</span>

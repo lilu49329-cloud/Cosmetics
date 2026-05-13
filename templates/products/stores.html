@@ -1,42 +1,219 @@
 {% extends 'products/base.html' %}
-{% block title %}Hệ thống cửa hàng | Cosmetic Shop{% endblock %}
+{% block title %}Hệ thống cửa hàng | Cosmetics{% endblock %}
 {% block content %}
-<div class="container my-4 py-4" style="background:#fff; border-radius: 1rem; color: #222; box-shadow: 0 2px 8px #ff69b4;">
-    <h2 class="mb-4" style="color:#ff69b4;font-weight:bold;letter-spacing:2px;">Hệ thống cửa hàng</h2>
+<style>
+    .store-hero {
+        background: #fff;
+        border-radius: 1.5rem;
+        padding: 4rem 2rem;
+        margin-bottom: 4rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(255,105,180,0.1);
+        position: relative;
+        overflow: hidden;
+        border: 2px solid #ff69b4; /* Đồng bộ viền hồng với các thẻ khác */
+    }
+    .store-hero::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        left: -100px;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255,105,180,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .store-hero::after {
+        content: '';
+        position: absolute;
+        bottom: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(255,182,230,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+    .store-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        background: #fff0f6;
+        border-radius: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: #ff69b4;
+        font-size: 2.5rem;
+        transform: rotate(-10deg);
+        box-shadow: 0 8px 15px rgba(255,105,180,0.1);
+    }
+    .store-hero h1 {
+        font-weight: 800;
+        font-size: 3.8rem;
+        margin-bottom: 1rem;
+        color: #221b29;
+        letter-spacing: -2px;
+    }
+    .store-hero h1 span {
+        color: #ff69b4;
+    }
+    .store-hero p {
+        font-size: 1.25rem;
+        font-weight: 400;
+        max-width: 600px;
+        margin: 0 auto;
+        color: #777;
+        line-height: 1.6;
+    }
+    .hero-decoration-dot {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: #ffb6e6;
+        border-radius: 50%;
+    }
+    
+    .store-card {
+        background: #fff;
+        border-radius: 1.2rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid #f8f8f8;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    .store-card:hover {
+        transform: translateX(10px);
+        border-color: #ff69b4;
+        box-shadow: 0 5px 20px rgba(255,105,180,0.1);
+    }
+    .store-card.active {
+        background: #fff0f6;
+        border-color: #ff69b4;
+        border-width: 2px;
+    }
+    .store-name {
+        color: #221b29;
+        font-weight: 700;
+        font-size: 1.15rem;
+        margin-bottom: 0.6rem;
+        transition: color 0.3s ease;
+    }
+    .store-card:hover .store-name, .store-card.active .store-name {
+        color: #ff69b4;
+    }
+    .store-info {
+        font-size: 0.95rem;
+        color: #555;
+        margin-bottom: 0.3rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .store-info i {
+        color: #ff69b4;
+        margin-top: 3px;
+    }
+    
+    .map-container {
+        position: sticky;
+        top: 20px;
+        border-radius: 2rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        height: 600px;
+        background: #eee;
+    }
+    
+    .contact-badge {
+        display: inline-block;
+        background: #ff69b4;
+        color: #fff;
+        padding: 0.4rem 1.2rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        text-decoration: none;
+        margin-top: 1rem;
+        transition: background 0.2s;
+    }
+    .contact-badge:hover {
+        background: #d81b60;
+        color: #fff;
+    }
+</style>
+
+<div class="store-hero">
+    <div class="hero-decoration-dot" style="top: 20%; left: 10%;"></div>
+    <div class="hero-decoration-dot" style="top: 70%; right: 15%; width: 20px; height: 20px;"></div>
+    <div class="store-icon-wrapper">
+        <i class="bi bi-shop"></i>
+    </div>
+    <h1>Hệ thống <span>cửa hàng</span></h1>
+    <p>Tìm kiếm địa chỉ Cosmetics gần nhất để trải nghiệm dịch vụ và sản phẩm trực tiếp với không gian hiện đại và đội ngũ chuyên nghiệp.</p>
+</div>
+
+<div class="container mb-5">
     <div class="row">
-        <div class="col-md-5 mb-4">
-            <p>Danh sách các cửa hàng trên toàn quốc:</p>
-            <ul class="list-group mb-4">
-            {% for store in stores %}
-            <li class="list-group-item" style="background:#fff; color:#222; border:1px solid #ffe4ef; border-radius: 0.5rem; margin-bottom: 0.5rem; box-shadow:0 1px 4px #ffe4ef;">
-                <div style="font-weight:bold;font-size:1.1em; color:#ff69b4;">{{ store.name }}</div>
-                <div><i class="fa fa-map-marker-alt" style="color:#ff69b4;"></i> {{ store.address }}</div>
-                {% if store.phone %}<div><i class="fa fa-phone" style="color:#ff69b4;"></i> {{ store.phone }}</div>{% endif %}
-                <a href="{{ store.map_url }}" class="btn btn-sm btn-outline-pink mt-2" target="_blank" style="border-color:#ff69b4;color:#ff69b4;">
-                    Xem chỉ đường trên Google Maps
-                </a>
-            </li>
-            {% empty %}
-            <li class="list-group-item" style="background:#fff; color:#222; border:1px solid #ffe4ef;">Chưa có cửa hàng nào.</li>
-            {% endfor %}
-            </ul>
-            <a href="{% url 'order_lookup' %}" class="btn btn-auth">Tra cứu đơn hàng</a>
-            <div class="mt-4 text-center">
-                <a href="{% url 'home' %}" class="btn btn-outline-primary">← Về trang chủ</a>
+        <!-- Sidebar: Danh sách cửa hàng -->
+        <div class="col-lg-5">
+            <h3 class="mb-4" style="font-weight: 700; color: #18141c;">Chi nhánh ({{ stores|length }})</h3>
+            <div class="store-list">
+                {% for store in stores %}
+                <div class="store-card {% if forloop.first %}active{% endif %}" onclick="updateMap('{{ store.address|urlencode }}', this)">
+                    <div class="store-name">{{ store.name }}</div>
+                    <div class="store-info">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span>{{ store.address }}</span>
+                    </div>
+                    {% if store.phone %}
+                    <div class="store-info">
+                        <i class="bi bi-telephone-fill"></i>
+                        <span>{{ store.phone }}</span>
+                    </div>
+                    {% endif %}
+                    <a href="https://www.google.com/maps?q={{ store.address|urlencode }}" target="_blank" class="contact-badge">
+                        <i class="bi bi-cursor-fill me-2"></i> Chỉ đường
+                    </a>
+                </div>
+                {% empty %}
+                <div class="alert alert-light text-center py-4">
+                    Chưa có cửa hàng nào trong hệ thống.
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="mt-4">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary w-100" style="border-radius: 1rem;">← Về trang chủ</a>
             </div>
         </div>
-        <div class="col-md-7">
-            {% if stores and stores.0.address %}
-                <div style="width:100%; min-height:350px; border-radius:1rem; overflow:hidden; box-shadow:0 2px 8px #ffe4ef;">
-                    <iframe width="100%" height="350" frameborder="0" style="border:0" allowfullscreen loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                        src="https://www.google.com/maps?q={{ stores.0.address|urlencode }}&output=embed">
-                    </iframe>
-                </div>
-            {% else %}
-                <div class="alert alert-info">Không có địa chỉ cửa hàng để hiển thị bản đồ.</div>
-            {% endif %}
+        
+        <!-- Main: Bản đồ -->
+        <div class="col-lg-7">
+            <div class="map-container">
+                <iframe id="google-map" width="100%" height="100%" frameborder="0" style="border:0" 
+                    allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                    src="https://www.google.com/maps?q={% if stores %}{{ stores.0.address|urlencode }}{% else %}Hà+Nội{% endif %}&output=embed">
+                </iframe>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    function updateMap(address, element) {
+        // Cập nhật iframe
+        const map = document.getElementById('google-map');
+        map.src = `https://www.google.com/maps?q=${address}&output=embed`;
+        
+        // Cập nhật active class
+        document.querySelectorAll('.store-card').forEach(card => card.classList.remove('active'));
+        element.classList.add('active');
+        
+        // Cuộn mượt đến bản đồ trên mobile
+        if (window.innerWidth < 992) {
+            document.querySelector('.map-container').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+</script>
 {% endblock %}

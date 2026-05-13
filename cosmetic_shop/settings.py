@@ -23,7 +23,7 @@ LANGUAGES = [
     ('en', _('English')),
 ]
 
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = 'vi'
 
 LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'locale'),
@@ -152,6 +152,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'currency_filters': 'products.templatetags.currency_filters',
+            }
         },
     },
 ]
@@ -163,9 +166,10 @@ WSGI_APPLICATION = 'cosmetic_shop.wsgi.application'
 import dj_database_url
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://neondb_owner:npg_YfpNDZ0AJvG4@ep-icy-surf-apdzz3lg-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
@@ -192,9 +196,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 #LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ho_Chi_Minh'
 USE_I18N = True
 USE_TZ = True
+USE_L10N = True
+USE_THOUSAND_SEPARATOR = True
+THOUSAND_SEPARATOR = '.'
+DECIMAL_SEPARATOR = ','
+NUMBER_GROUPING = 3
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

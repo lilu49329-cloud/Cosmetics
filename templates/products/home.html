@@ -33,6 +33,7 @@
 {% load humanize %}
 {% load tz %}
 {# Đảm bảo bạn đã thêm 'django.contrib.humanize' vào INSTALLED_APPS trong settings.py để filter intcomma hoạt động #}
+{% load currency_filters %}
 {% comment %} {% block title %}Trang chủ | Cosmetic Shop{% endblock %} {% endcomment %}
 
 {% block content %}
@@ -46,23 +47,23 @@
                 <div class="col">
                     <a href="{% url 'product_detail' product.id %}" style="text-decoration:none; color:inherit;">
                     <div class="card product-card h-100 position-relative" style="border:2px solid #ff69b4; border-radius:1.2rem;">
-                        {% if product.brand %}
-                        <span class="position-absolute top-0 end-0 m-2" style="font-size:0.9rem;color:#ff69b4;font-weight:bold;z-index:2;">{{ product.brand }}</span>
-                        {% endif %}
-                        <img src="{% if product.image %}{{ product.image.url }}{% else %}https://img.icons8.com/color/96/ff69b4/lipstick.png{% endif %}" class="card-img-top" alt="{{ product.name }}" style="object-fit:contain;max-height:160px;">
+                        <img src="{% if product.image %}{{ product.image.url }}{% else %}https://img.icons8.com/color/96/ff69b4/lipstick.png{% endif %}" class="card-img-top" alt="{{ product.name }}" style="object-fit:contain;max-height:160px;padding:10px;">
                         {% if product.has_gift or product.is_gift %}
-                        <div class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark">QUÀ TẶNG</div>
+                        <div class="position-absolute top-0 start-0 m-2 badge bg-warning text-dark" style="z-index:2;">QUÀ TẶNG</div>
                         {% endif %}
                         {% if product.discount_percent and product.discount_percent > 0 %}
-                        <div class="position-absolute top-0 end-0 m-2 badge bg-danger" style="right:40px!important;">-{{ product.discount_percent }}%</div>
+                        <div class="position-absolute top-0 end-0 m-2 badge bg-danger" style="z-index:3; padding: 0.5rem 0.8rem; font-size: 0.9rem; border-radius: 0 0.8rem 0 0.8rem;">-{{ product.discount_percent }}%</div>
                         {% endif %}
                         <div class="card-body pb-2">
+                            {% if product.brand %}
+                            <div class="brand-label" style="font-size:0.75rem; color:#ff69b4; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">{{ product.brand }}</div>
+                            {% endif %}
                             <h5 class="card-title mb-1" style="font-size:1.1rem;font-weight:600;">{{ product.name }}</h5>
                             <div class="mb-1" style="font-size:0.95rem;color:#888;">{{ product.description|truncatechars:40 }}</div>
                             <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="fw-bold" style="color:#f44336;font-size:1.1rem;">{{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
+                                <span class="fw-bold" style="color:#ff69b4;font-size:1.1rem;">{{ product.price|currency_vnd }}</span>
                                 {% if product.original_price %}
-                                    <span class="text-decoration-line-through text-muted" style="font-size:0.95rem;">{{ product.original_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
+                                    <span class="text-decoration-line-through text-muted" style="font-size:0.95rem;">{{ product.original_price|currency_vnd }}</span>
                                 {% endif %}
                             </div>
                             {% if product.sale_end %}
@@ -74,11 +75,11 @@
                             </div>
                             {% endif %}
                         </div>
-                        <form method="post" action="{% url 'cart_add' product.id %}" class="position-absolute bottom-0 end-0 m-2" style="z-index:3;">
+                        <form method="post" action="{% url 'cart_add' product.id %}" onclick="event.stopPropagation();">
                             {% csrf_token %}
                             <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="btn p-0" style="background:none;border:none;outline:none;">
-                                <i class="bi bi-cart-plus" style="font-size:1.5rem; color:#ff69b4;" title="Thêm vào giỏ hàng"></i>
+                            <button type="submit" class="cart-btn-abs">
+                                <i class="bi bi-cart-plus"></i>
                             </button>
                         </form>
                     </div>
@@ -130,57 +131,7 @@ document.querySelectorAll('.countdown').forEach(function(cd){
 
 <script>
 // AJAX add to cart for all product card forms
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('form[action*="cart_add"]').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var formData = new FormData(form);
-            fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                },
-                body: formData
-            })
-            .then(res => res.json())
-                    .then data => {
-                        // Hiển thị toast
-                        var toast = document.getElementById('cart-toast');
-                        if (toast) {
-                            toast.style.display = 'block';
-                            setTimeout(function(){ toast.style.display = 'none'; }, 2000);
-                        }
-                        // Cập nhật badge bell
-                        if (data.notifications_count !== undefined) {
-                            var bellBadge = document.getElementById('bell-badge');
-                            if (bellBadge) {
-                                bellBadge.textContent = data.notifications_count;
-                                bellBadge.style.display = data.notifications_count > 0 ? 'inline-block' : 'none';
-                            }
-                        }
-                        // Cập nhật badge số lượng trên icon giỏ hàng
-                        if (data.cart_count !== undefined) {
-                            var cartIcon = document.querySelector('a[title="Giỏ hàng"]');
-                            if (cartIcon) {
-                                let badge = cartIcon.querySelector('.cart-badge');
-                                if (!badge) {
-                                    badge = document.createElement('span');
-                                    badge.className = 'cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
-                                    badge.style.fontSize = '0.8rem';
-                                    cartIcon.appendChild(badge);
-                                }
-                                badge.textContent = data.cart_count;
-                                badge.style.display = data.cart_count > 0 ? 'inline-block' : 'none';
-                            }
-                        }
-                    })
-            .catch(() => {
-                alert('Có lỗi khi thêm vào giỏ hàng.');
-            });
-        });
-    });
-});
+
 </script>
 
 <!-- Section: Sản phẩm hot -->
@@ -209,17 +160,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="card-body pb-2 pt-3" style="background:#fff; border-radius:0 0 1rem 1rem;">
                             <div style="font-size:1.2rem; color:#ff69b4; font-weight:700;" class="d-flex align-items-center gap-2">
                                 {% if product.sale_price %}
-                                    {{ product.sale_price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
-                                    <span style="color:#888;font-size:1rem;text-decoration:line-through; margin-left:8px;">{{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span></span>
+                                    {{ product.sale_price|currency_vnd }}
+                                    <span style="color:#888;font-size:1rem;text-decoration:line-through; margin-left:8px;">{{ product.price|currency_vnd }}</span>
                                 {% else %}
-                                    {{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
+                                    {{ product.price|currency_vnd }}
                                 {% endif %}
                             </div>
-                            <form method="post" action="{% url 'cart_add' product.id %}" class="position-absolute bottom-0 end-0 m-2" style="z-index:3;">
+                            <form method="post" action="{% url 'cart_add' product.id %}" onclick="event.stopPropagation();">
                                 {% csrf_token %}
                                 <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="btn p-0" style="background:none;border:none;outline:none;">
-                                    <i class="bi bi-cart-plus" style="font-size:1.5rem; color:#ff69b4;" title="Thêm vào giỏ hàng"></i>
+                                <button type="submit" class="cart-btn-abs">
+                                    <i class="bi bi-cart-plus"></i>
                                 </button>
                             </form>
                             <div style="font-size:0.95rem; font-weight:700; color:#221b29; margin-top:2px;">{{ product.brand|upper }}</div>
@@ -246,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h3 style="color:#ff69b4;font-weight:bold;">Sản phẩm mới</h3>
-            <a href="{% url 'product_list' %}" class="btn btn-auth btn-sm">Xem tất cả sản phẩm</a>
+            <a href="{% url 'product_list' %}" class="btn-premium btn-sm">Xem tất cả sản phẩm</a>
         </div>
         <div class="row g-3">
             {% for product in products %}
@@ -275,11 +226,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 {{ product.price|floatformat:0|intcomma }}<span style="font-size:1.1rem;">₫</span>
                             {% endif %}
                         </div>
-                        <form method="post" action="{% url 'cart_add' product.id %}" class="position-absolute bottom-0 end-0 m-2" style="z-index:3;">
+                        <form method="post" action="{% url 'cart_add' product.id %}" onclick="event.stopPropagation();">
                             {% csrf_token %}
                             <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="btn p-0" style="background:none;border:none;outline:none;">
-                                <i class="bi bi-cart-plus" style="font-size:1.5rem; color:#ff69b4;" title="Thêm vào giỏ hàng"></i>
+                            <button type="submit" class="cart-btn-abs">
+                                <i class="bi bi-cart-plus"></i>
                             </button>
                         </form>
                         <div style="font-size:0.95rem; font-weight:700; color:#221b29; margin-top:2px;">{{ product.brand|upper }}</div>
@@ -293,6 +244,38 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             {% empty %}
             <div class="col-12 text-center text-muted">Chưa có sản phẩm nào.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Section: Tin tức mới nhất -->
+<div class="row mt-5 mb-5">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 style="color:#ff69b4;font-weight:bold;">📰 Tin tức mới nhất</h3>
+            <a href="{% url 'news' %}" class="btn-premium btn-sm">Xem tất cả tin tức</a>
+        </div>
+        <div class="row g-4">
+            {% for news in news_list %}
+            <div class="col-12 col-md-4">
+                <div class="card h-100 shadow-sm border-0" style="border-radius:1.2rem; overflow:hidden;">
+                <a href="{% url 'news_detail' news.pk %}" class="text-decoration-none" style="color:inherit;">
+                    {% if news.image %}
+                    <img src="{{ news.image.url }}" class="card-img-top" alt="{{ news.title }}" style="height:200px; object-fit:cover;">
+                    {% else %}
+                    <img src="https://images.unsplash.com/photo-1512496011931-d21d88a33502?w=500" class="card-img-top" alt="{{ news.title }}" style="height:200px; object-fit:cover;">
+                    {% endif %}
+                </a>
+                    <div class="card-body">
+                        <small class="text-muted">{{ news.created_at|date:"d/m/Y" }}</small>
+                        <h5 class="card-title mt-2" style="color:#d81b60; font-weight:600;">{{ news.title }}</h5>
+                        <p class="card-text text-muted" style="font-size:0.95rem;">{{ news.content|truncatewords:20 }}</p>
+                        <a href="{% url 'news_detail' news.pk %}" class="btn-premium btn-sm mt-2">Đọc tiếp →</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted">Chưa có tin tức nào được cập nhật.</div>
             {% endfor %}
         </div>
     </div>

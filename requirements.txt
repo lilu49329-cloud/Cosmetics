@@ -8,3 +8,14 @@ sqlparse
 asgiref
 pytz
 django-jazzmin
+django-allauth
+django-widget-tweaks
+django-apscheduler
+requests
+beautifulsoup4
+PyJWT
+python3-openid
+requests-oauthlib
+cryptography
+fastapi
+uvicorn

@@ -1,0 +1,92 @@
+{% extends 'products/base.html' %}
+{% block title %}{{ news.title }} | Cosmetics{% endblock %}
+{% block content %}
+<style>
+    body { background: #fff0f6; }
+    .news-detail-container {
+        background: #fff;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 24px rgba(255,105,180,0.1);
+        padding: 2.5rem;
+        margin-top: 2rem;
+        margin-bottom: 3rem;
+    }
+    .news-header {
+        border-bottom: 2px solid #ffb6e6;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+    }
+    .news-title {
+        color: #d81b60;
+        font-weight: 700;
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+    }
+    .news-meta {
+        color: #888;
+        font-size: 0.95rem;
+    }
+    .news-image {
+        width: 100%;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    .news-text {
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: #333;
+        white-space: pre-line;
+    }
+    .related-news-card {
+        transition: transform 0.2s;
+        border: 1px solid #ffb6e6;
+        border-radius: 1rem;
+    }
+    .related-news-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(255,105,180,0.2);
+    }
+</style>
+
+<div class="container" style="max-width: 900px;">
+    <div class="news-detail-container">
+        <div class="news-header">
+            <h1 class="news-title">{{ news.title }}</h1>
+            <div class="news-meta">
+                <i class="bi bi-calendar3 me-2"></i> {{ news.created_at|date:"d/m/Y H:i" }} | <i class="bi bi-person me-2"></i> Ban quản trị
+            </div>
+        </div>
+
+        {% if news.image %}
+        <img src="{{ news.image.url }}" class="news-image" alt="{{ news.title }}">
+        {% endif %}
+
+        <div class="news-text">
+            {{ news.content }}
+        </div>
+
+        <div class="mt-5 pt-4 border-top">
+            <h4 style="color:#ff69b4; font-weight:bold;" class="mb-4">Tin tức liên quan</h4>
+            <div class="row g-3">
+                {% for item in other_news %}
+                <div class="col-md-4">
+                    <a href="{% url 'news_detail' item.pk %}" class="text-decoration-none">
+                        <div class="card h-100 related-news-card">
+                            <div class="card-body p-3">
+                                <h6 class="card-title text-dark mb-1" style="font-weight:600;">{{ item.title|truncatechars:50 }}</h6>
+                                <small class="text-muted">{{ item.created_at|date:"d/m/Y" }}</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{% url 'news' %}" class="btn btn-outline-auth">← Quay lại danh sách tin tức</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

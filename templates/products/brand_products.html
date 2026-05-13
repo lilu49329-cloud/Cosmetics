@@ -1,0 +1,235 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+{% block title %}Thương hiệu {{ brand.name }} | Cosmetics{% endblock %}
+{% block content %}
+<style>
+    .brand-hero {
+        background: linear-gradient(135deg, #fff0f6 0%, #ffebf3 100%);
+        border-radius: 2rem;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 10px 30px rgba(255,105,180,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    .brand-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255,105,180,0.1) 0%, transparent 70%);
+        z-index: 0;
+    }
+    .brand-logo-container {
+        background: #fff;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        border: 4px solid #fff;
+        position: relative;
+        z-index: 1;
+    }
+    .brand-logo-container img {
+        max-width: 70%;
+        max-height: 70%;
+        object-fit: contain;
+    }
+    .brand-name {
+        color: #d81b60;
+        font-weight: 800;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        position: relative;
+        z-index: 1;
+    }
+    .brand-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+    .stat-item {
+        background: rgba(255,255,255,0.6);
+        backdrop-filter: blur(5px);
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        font-size: 0.9rem;
+        color: #ff69b4;
+        font-weight: 600;
+        border: 1px solid rgba(255,105,180,0.2);
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 2rem;
+    }
+    
+    .premium-card {
+        background: #fff;
+        border-radius: 1.5rem;
+        border: none;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative; /* Thêm để chứa icon giỏ hàng tuyệt đối */
+    }
+    .premium-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(255,105,180,0.15);
+    }
+    .card-img-wrapper {
+        position: relative;
+        padding: 1.5rem;
+        background: #fffafa;
+        height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .card-img-wrapper img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+        transition: transform 0.5s ease;
+    }
+    .premium-card:hover .card-img-wrapper img {
+        transform: scale(1.1);
+    }
+    .card-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: #ff69b4;
+        color: #fff;
+        padding: 0.2rem 0.8rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 2;
+    }
+    .card-content {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .product-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #221b29;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+        height: 3rem;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .product-price {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #f44336;
+        margin-bottom: 1rem;
+    }
+    .buy-btn {
+        width: 100%;
+        background: #ff69b4;
+        color: #fff;
+        border: none;
+        padding: 0.8rem;
+        border-radius: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: background 0.2s;
+        margin-top: auto;
+    }
+    .buy-btn:hover {
+        background: #d81b60;
+        color: #fff;
+    }
+</style>
+
+<div class="brand-hero text-center">
+    <div class="brand-logo-container">
+        {% if brand.logo %}
+        <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+        {% else %}
+        <i class="bi bi-shop" style="font-size: 3rem; color: #ff69b4;"></i>
+        {% endif %}
+    </div>
+    <h1 class="brand-name">{{ brand.name }}</h1>
+    <p class="text-muted mx-auto" style="max-width: 600px;">{{ brand.description|default:"Khám phá bộ sưu tập mỹ phẩm chính hãng từ thương hiệu hàng đầu thế giới." }}</p>
+    
+    <div class="brand-stats">
+        <div class="stat-item"><i class="bi bi-box-seam me-2"></i> {{ products.count }} Sản phẩm</div>
+        <div class="stat-item"><i class="bi bi-star-fill me-2"></i> Chính hãng 100%</div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 style="font-weight: 700; color: #221b29;">Danh sách sản phẩm</h3>
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" style="border-radius: 1rem;">
+                Sắp xếp
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Mới nhất</a></li>
+                <li><a class="dropdown-item" href="#">Giá thấp đến cao</a></li>
+                <li><a class="dropdown-item" href="#">Giá cao đến thấp</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="premium-card" onclick="window.location.href='{% url 'product_detail' product.id %}'" style="cursor: pointer;">
+            <div class="card-img-wrapper">
+                {% if product.is_promotion %}
+                <div class="card-badge">HOT SALE</div>
+                {% endif %}
+                <img src="{% if product.image %}{{ product.image.url }}{% else %}https://img.icons8.com/color/96/ff69b4/lipstick.png{% endif %}" alt="{{ product.name }}">
+            </div>
+            <div class="card-content">
+                <h5 class="product-title">{{ product.name }}</h5>
+                <div class="product-price">{{ product.price|floatformat:0|intcomma }}₫</div>
+                
+                <form method="post" action="{% url 'cart_add' product.id %}" onclick="event.stopPropagation();">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="cart-btn-abs">
+                        <i class="bi bi-cart-plus"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-search" style="font-size: 4rem; color: #ddd;"></i>
+            </div>
+            <h4 class="text-muted">Chưa có sản phẩm nào.</h4>
+            <a href="{% url 'product_list' %}" class="btn-premium mt-3">Khám phá sản phẩm khác</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

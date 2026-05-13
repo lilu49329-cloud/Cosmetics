@@ -236,10 +236,31 @@ def news(request):
     news_list = News.objects.all().order_by('-created_at')
     return render(request, 'products/news.html', {'news_list': news_list})
 
+def news_detail(request, pk):
+    from .models import News
+    news_item = get_object_or_404(News, pk=pk)
+    # Lấy 3 tin tức khác để làm gợi ý
+    other_news = News.objects.exclude(pk=pk).order_by('-created_at')[:3]
+    return render(request, 'products/news_detail.html', {
+        'news': news_item,
+        'other_news': other_news
+    })
+
 def brands(request):
     from .models import Brand
     brands = Brand.objects.all().order_by('name')
     return render(request, 'products/brands.html', {'brands': brands})
+
+def brand_products(request, brand_id):
+    from .models import Brand, Product, Category
+    brand = get_object_or_404(Brand, id=brand_id)
+    products = Product.objects.filter(brand=brand, is_active=True).order_by('-created_at')
+    categories = Category.objects.all()
+    return render(request, 'products/brand_products.html', {
+        'brand': brand,
+        'products': products,
+        'categories': categories
+    })
 
 def stores(request):
     from .models import Store
@@ -353,8 +374,9 @@ def home(request):
             'discount_percent': discount_percent,
         })
     cart = Cart(request)
-    from .models import Slider
+    from .models import Slider, News
     sliders = Slider.objects.filter(is_active=True).order_by('-created_at')
+    news_list = News.objects.all().order_by('-created_at')[:3]
     return render(request, 'products/home.html', {
         'products': products,
         'categories': categories,
@@ -362,12 +384,50 @@ def home(request):
         'flash_sale_products': flash_sale_products,
         'cart': cart,
         'sliders': sliders,
+        'news_list': news_list,
     })
 
 def product_list(request):
-    products = Product.objects.all()
+    from .models import Category, Brand, Product
+    products = Product.objects.filter(is_active=True)
     categories = Category.objects.all()
-    return render(request, 'products/product_list.html', {'products': products, 'categories': categories})
+    brands = Brand.objects.all()
+    
+    # Filtering
+    query = request.GET.get('query')
+    if query:
+        products = products.filter(name__icontains=query)
+        
+    category_id = request.GET.get('category')
+    if category_id:
+        products = products.filter(category_id=category_id)
+        
+    brand_id = request.GET.get('brand')
+    if brand_id:
+        products = products.filter(brand_id=brand_id)
+        
+    min_price = request.GET.get('min_price')
+    if min_price:
+        products = products.filter(price__gte=min_price)
+        
+    max_price = request.GET.get('max_price')
+    if max_price:
+        products = products.filter(price__lte=max_price)
+        
+    # Sorting
+    sort_by = request.GET.get('sort_by')
+    if sort_by == 'price_asc':
+        products = products.order_by('price')
+    elif sort_by == 'price_desc':
+        products = products.order_by('-price')
+    else:
+        products = products.order_by('-created_at')
+        
+    return render(request, 'products/product_list.html', {
+        'products': products,
+        'categories': categories,
+        'brands': brands,
+    })
 
 def product_detail(request, id):
     product = get_object_or_404(Product, id=id)

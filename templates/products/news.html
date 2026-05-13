@@ -58,9 +58,12 @@
                     <img src="{{ news.image.url }}" alt="{{ news.title }}" class="news-img">
                 {% endif %}
                 <div class="news-body">
-                    <div class="news-title">{{ news.title }}</div>
+                    <a href="{% url 'news_detail' news.pk %}" class="text-decoration-none">
+                        <div class="news-title">{{ news.title }}</div>
+                    </a>
                     <span class="news-date">{{ news.created_at|date:'d/m/Y' }}</span>
-                    <div class="news-content">{{ news.content }}</div>
+                    <div class="news-content">{{ news.content|truncatewords:50 }}</div>
+                    <a href="{% url 'news_detail' news.pk %}" class="btn btn-link p-0 mt-2 text-decoration-none" style="color:#d81b60; font-weight:600;">Xem chi tiết...</a>
                 </div>
             </div>
         </div>

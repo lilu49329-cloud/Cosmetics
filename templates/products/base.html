@@ -113,39 +113,25 @@
                 }
                 background: #fff !important;
                 color: #ff69b4 !important;
-        .btn-success:focus,
-        .btn-danger:focus,
-                color: #ff69b4;
-                .form-control, .form-select {
-                    background: #fff;
-                color: #ff69b4;
-                    border: 1px solid #ff69b4;
-                }
-            .btn,
-            .btn-primary,
-            .btn-success {
-                background: #ff69b4 !important;
-                color: #fff !important;
-                font-weight: bold;
-                border: none;
-            border-color: #d72660;
-            box-shadow: 0 0 0 0.2rem rgba(255,105,180,.15);
-                background: #fff !important;
-                color: #ff69b4 !important;
-                border: 1px solid #ff69b4 !important;
-                .btn-danger,
-                .navbar-toggler,
-                background: #ff69b4 !important;
-                color: #fff !important;
-                    background: #ff69b4 !important;
-                    color: #18141c !important;
-                    font-weight: bold;
-                    border: none;
-                    border-radius: 0.7rem;
-                    padding: 0.7rem 1.5rem;
-                    transition: background 0.2s, color 0.2s;
-                    box-shadow: none;
-                }
+        .btn, .btn-primary, .btn-success {
+            background: #ff69b4 !important;
+            color: #fff !important;
+            font-weight: 600;
+            border: none;
+            border-radius: 0.7rem;
+            padding: 0.6rem 1.5rem;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #d72660 !important;
+            transform: translateY(-2px);
+        }
+        .btn-auth {
+            background: #fff !important;
+            color: #ff69b4 !important;
+            border: 1px solid #ff69b4 !important;
+            border-radius: 0.7rem;
+        }
         a, a:visited {
             color: #ff69b4;
         }
@@ -303,30 +289,67 @@
         #contact-panel-dropdown .contact-content li {
             margin-bottom: 6px;
         }
-        /* Đảm bảo icon giỏ hàng luôn hiển thị đúng màu và không bị lỗi */
-        .bi-cart-plus {
-            color: #18141c !important; /* Màu đen, override mọi style khác */
-            font-size: 1.5rem;
-        }
-        /* Icon giỏ hàng: nền trắng, icon màu hồng, bo tròn, hiệu ứng hover */
-        .cart-icon-btn {
+        /* Global Cart Button Style for Cards */
+        .cart-btn-abs {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
             background: #fff !important;
-            border-radius: 50%;
-            box-shadow: 0 2px 8px #ffb6d5a0;
-            padding: 8px;
-            border: 1px solid #ff69b4;
+            width: 44px;
+            height: 44px;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border: 1px solid #eee !important;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #221b29 !important; /* Màu đen như ảnh user gửi */
+            z-index: 10;
+            padding: 0;
+            outline: none !important;
+        }
+        .cart-btn-abs:hover {
+            background: #ff69b4 !important;
+            color: #fff !important;
+            transform: scale(1.15) rotate(5deg);
+            border-color: #ff69b4 !important;
+            box-shadow: 0 8px 20px rgba(255,105,180,0.3);
+        }
+        .cart-btn-abs i {
+            font-size: 1.4rem !important;
+        }
+        /* Premium Button Style */
+        .btn-premium {
+            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+            color: #fff !important;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 28px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3);
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: box-shadow 0.2s, transform 0.2s;
+            font-size: 0.9rem;
+            cursor: pointer;
         }
-        .cart-icon-btn:hover {
-            box-shadow: 0 6px 24px #fffefea0;
-            transform: scale(1.08);
+        .btn-premium:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.45);
+            background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
+            color: #fff !important;
         }
-        .cart-icon-btn .bi-cart-plus {
-            color: #fdfdfdff !important;
-            font-size: 1.5rem;
+        .btn-premium:active {
+            transform: translateY(-1px);
+        }
+        .btn-premium.btn-sm {
+            padding: 6px 18px;
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -476,6 +499,60 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                // AJAX for Add to Cart
+                document.querySelectorAll('form[action*="cart_add"]').forEach(function(form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        var formData = new FormData(form);
+                        fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                            },
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Hiển thị toast
+                                var toast = document.getElementById('cart-toast');
+                                if (toast) {
+                                    toast.style.display = 'block';
+                                    setTimeout(function(){ toast.style.display = 'none'; }, 2000);
+                                }
+                                // Cập nhật badge bell
+                                if (data.notifications_count !== undefined) {
+                                    var bellBadge = document.getElementById('bell-badge');
+                                    if (bellBadge) {
+                                        bellBadge.textContent = data.notifications_count;
+                                        bellBadge.style.display = data.notifications_count > 0 ? 'inline-block' : 'none';
+                                    }
+                                }
+                                // Cập nhật badge số lượng trên icon giỏ hàng
+                                if (data.cart_count !== undefined) {
+                                    var cartIcon = document.querySelector('a[title="Giỏ hàng"]');
+                                    if (cartIcon) {
+                                        let badge = cartIcon.querySelector('.cart-badge');
+                                        if (!badge) {
+                                            badge = document.createElement('span');
+                                            badge.className = 'cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                                            badge.style.fontSize = '0.8rem';
+                                            cartIcon.appendChild(badge);
+                                        }
+                                        badge.textContent = data.cart_count;
+                                        badge.style.display = data.cart_count > 0 ? 'inline-block' : 'none';
+                                    }
+                                }
+                            } else if (data.error) {
+                                alert(data.error);
+                            }
+                        })
+                        .catch(() => {
+                            alert('Có lỗi khi thêm vào giỏ hàng.');
+                        });
+                    });
+                });
                 // Hàm cập nhật badge số lượng thông báo chưa đọc
                 function updateNotificationBadge() {
                     fetch('{% url "notifications_api" %}')

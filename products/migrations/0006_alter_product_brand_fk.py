@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('products', '0004_brand_data_migration'),
+        ('products', '0005b_brand_data_migration'),
     ]
     operations = [
         migrations.AlterField(
