@@ -817,7 +817,14 @@ def skin_analysis(request):
     result = None
     if request.method == 'POST' and request.FILES.get('image'):
         img_file = request.FILES['image']
+        
+        # Chuyển ảnh sang base64 để hiển thị lại sau khi reload
+        import base64
+        img_data = base64.b64encode(img_file.read()).decode('utf-8')
+        img_file.seek(0) # Reset con trỏ để AI có thể đọc lại
+        
         result = analyze_skin_type(img_file)
+        result['image_base64'] = img_data # Gửi ảnh về template
         
         # Filter products based on result
         skin_type = result.get('skin_type', 'Da hỗn hợp')

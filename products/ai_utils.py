@@ -42,10 +42,10 @@ def analyze_skin_type(image_file):
     if not api_key or 'your-openai' in api_key:
         # Fallback nếu không có API key
         return {
-            'status': 'success',
-            'skin_type': 'Da hỗn hợp',
-            'concerns': ['Mụn', 'Lỗ chân lông to'],
-            'confidence': 75.0
+            'status': 'demo',
+            'skin_type': 'Da hỗn hợp (Demo)',
+            'concerns': ['Cần cấu hình API Key'],
+            'confidence': 1.0
         }
 
     try:
