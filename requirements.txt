@@ -17,5 +17,3 @@ PyJWT
 python3-openid
 requests-oauthlib
 cryptography
-fastapi
-uvicorn
