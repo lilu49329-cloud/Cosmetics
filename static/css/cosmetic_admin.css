@@ -1,44 +1,63 @@
-/* COSMETIC SHOP ADMIN - ULTIMATE PINK & WHITE THEME */
+/* COSMETIC SHOP ADMIN - CLEAN & SEAMLESS UI */
 :root {
     --pink-primary: #ff69b4;
     --pink-light: #fff0f6;
     --pink-border: #ffe6f0;
 }
 
-/* ❌ ÉP BUỘC SIDEBAR PHẢI MÀU TRẮNG (DÙ LÀ CLASS DARK HAY LIGHT) */
+/* 🏆 XÓA BỎ MỌI HỘP TRẮNG VÀ NỀN ĐEN - HÒA QUYỆN TUYỆT ĐỐI */
 aside.main-sidebar, 
 .main-sidebar, 
 .sidebar,
 .os-content,
+.brand-link,
 .user-panel {
     background-color: #ffffff !important;
     background: #ffffff !important;
+    border-right: 1px solid var(--pink-border) !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
 }
 
-/* Fix Brand Link (Phần chứa Logo) */
-.brand-link, .brand-link:hover {
-    background-color: #ffffff !important;
-    border-bottom: 2px solid var(--pink-border) !important;
-    color: var(--pink-primary) !important;
-    display: flex !important;
-    align-items: center !important;
-    height: 57px !important;
+/* Xóa hộp trắng quanh Logo */
+.brand-link {
+    border-bottom: 1px solid var(--pink-border) !important;
+    padding: 15px 20px !important;
+}
+
+.brand-link .brand-image {
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important; /* Xóa hộp trắng quanh icon */
+    max-height: 35px !important;
 }
 
 .brand-link .brand-text {
+    background: transparent !important; /* Xóa hộp trắng quanh chữ */
     color: var(--pink-primary) !important;
     font-weight: 800 !important;
+    font-size: 1.4rem !important;
 }
 
-/* Fix chữ trong Sidebar */
+/* Xóa hộp trắng quanh tên Admin */
+.user-panel {
+    background: transparent !important;
+    border-bottom: 1px solid var(--pink-border) !important;
+}
+
+.user-panel .info {
+    background: transparent !important;
+}
+
+.user-panel .info a {
+    color: #666 !important;
+    background: transparent !important;
+}
+
+/* Menu items */
 .nav-sidebar .nav-link {
-    color: #444444 !important;
-}
-
-.nav-sidebar .nav-header {
-    background-color: transparent !important;
-    color: var(--pink-primary) !important;
-    font-weight: bold !important;
+    background: transparent !important; /* Xóa hộp của menu */
+    color: #444 !important;
 }
 
 .nav-sidebar .nav-link:hover {
@@ -46,30 +65,18 @@ aside.main-sidebar,
     color: var(--pink-primary) !important;
 }
 
+/* Chỉ khi được chọn mới có màu hồng đậm, không có viền hộp */
 .nav-sidebar .nav-item.active > .nav-link,
 .nav-sidebar .nav-link.active {
-    background-color: var(--pink-primary) !important;
+    background: var(--pink-primary) !important;
     color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 4px 10px rgba(255,105,180,0.2) !important;
 }
 
-/* Fix Navbar (Thanh trên cùng) */
-.main-header.navbar {
-    background-color: #ffffff !important;
-    border-bottom: 1px solid var(--pink-border) !important;
-}
-
-/* Tổng thể trang */
-.content-wrapper {
-    background-color: #fffcfd !important;
-}
-
-.card {
-    border-radius: 12px !important;
-    border: 1px solid var(--pink-border) !important;
-    box-shadow: 0 4px 12px rgba(255,105,180,0.05) !important;
-}
-
-.table thead th {
-    background-color: var(--pink-light) !important;
+/* Tiêu đề nhóm */
+.nav-header {
+    background: transparent !important;
     color: var(--pink-primary) !important;
+    font-weight: bold !important;
 }

@@ -246,7 +246,7 @@ JAZZMIN_SETTINGS = {
     "order_with_respect_to": ["products", "auth"],
 
     "custom_css": "css/cosmetic_admin.css",  # Sử dụng file CSS hồng đen riêng
-    "custom_js": None,
+    "custom_js": "js/cosmetic_admin.js",
 
     "icons": {
         "auth": "fas fa-users-cog",
