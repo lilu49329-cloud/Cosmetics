@@ -283,12 +283,18 @@ JAZZMIN_SETTINGS = {
 
 JAZZMIN_UI_TWEAKS = {
     "navbar_variant": "navbar-white navbar-light",
-    "theme": "flatly",
+    "theme": "default",
     "dark_mode_theme": None,
-    "sidebar_variant": "sidebar-light-primary",
+    "sidebar_variant": "sidebar-light-pink",
     "admin_log_item_class": "info",
-    "accent": "accent-primary",
+    "accent": "accent-pink",
     "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "navbar_fixed": True,
+    "sidebar_fixed": True,
+    "footer_fixed": False,
 }
 
 # VNPay Settings (Sandbox)
