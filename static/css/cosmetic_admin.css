@@ -1,37 +1,67 @@
 /* Cosmetic Shop Admin - Pink & White Premium Theme */
 body, .content-wrapper, .main-footer {
-    background: #fff8fb !important; /* Nền trắng hồng cực nhạt */
+    background: #fff8fb !important;
     font-family: 'Montserrat', Arial, sans-serif !important;
 }
 
-/* Header & Navbar */
-.main-header, .navbar {
+/* Fix Logo & Brand Layout */
+.brand-link {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0.8rem 1rem !important;
     background: #ffffff !important;
     border-bottom: 2px solid #ffe6f0 !important;
-    box-shadow: 0 2px 10px rgba(255, 105, 180, 0.1) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
 }
 
-.main-header .nav-link {
+.brand-link .brand-image {
+    float: none !important;
+    line-height: 1 !important;
+    margin-left: 0 !important;
+    margin-right: 12px !important;
+    max-height: 38px !important;
+    width: auto !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 6px rgba(255, 105, 180, 0.2) !important;
+}
+
+.brand-link .brand-text {
+    font-size: 1.35rem !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 800 !important;
     color: #ff69b4 !important;
+    letter-spacing: -0.5px !important;
+    text-shadow: none !important;
 }
 
-/* Sidebar - Pink & White */
+/* Sidebar & Navbar */
 .main-sidebar, .sidebar {
     background: #ffffff !important;
-    border-right: 1px solid #ffe6f0 !important;
+    box-shadow: 4px 0 15px rgba(255, 105, 180, 0.05) !important;
 }
 
-.brand-link {
-    background: #ffffff !important;
-    border-bottom: 2px solid #ffe6f0 !important;
+.main-header {
+    border-bottom: 1px solid #ffe6f0 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important;
+}
+
+/* Force light colors on sidebar elements */
+.nav-sidebar .nav-header {
+    background: transparent !important;
     color: #ff69b4 !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 1.5rem 1rem 0.5rem 1.5rem !important;
 }
 
-/* Sidebar Menu Items */
 .nav-sidebar .nav-link {
-    color: #555 !important;
-    margin: 4px 8px;
-    border-radius: 8px;
+    color: #666 !important;
+    font-weight: 500;
+    margin: 4px 12px !important;
+    border-radius: 10px !important;
 }
 
 .nav-sidebar .nav-link:hover {
@@ -39,63 +69,32 @@ body, .content-wrapper, .main-footer {
     color: #ff69b4 !important;
 }
 
-.nav-sidebar .nav-item.active > .nav-link, 
+.nav-sidebar .nav-item.active > .nav-link,
 .nav-sidebar .nav-link.active {
-    background: #ff69b4 !important;
+    background: linear-gradient(135deg, #ff69b4 0%, #ff85c2 100%) !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.25) !important;
 }
 
-/* Cards & Content */
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-thumb {
+    background: #ffe6f0;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #ff69b4;
+}
+
+/* Tables & Cards */
 .card {
-    border-radius: 12px !important;
+    border-radius: 16px !important;
     border: 1px solid #ffe6f0 !important;
-    box-shadow: 0 4px 20px rgba(255, 105, 180, 0.05) !important;
 }
-
-.card-header {
-    background: #fff0f6 !important;
-    border-bottom: 1px solid #ffe6f0 !important;
-    color: #ff69b4 !important;
-    font-weight: bold;
-}
-
-/* Buttons */
-.btn-primary, .btn-info, .btn-success, .btn-auth {
-    background: #ff69b4 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    color: #fff !important;
-    padding: 8px 20px;
-    transition: all 0.3s;
-}
-
-.btn-primary:hover {
-    background: #ff85c2 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 105, 180, 0.3);
-}
-
-/* Tables */
 .table thead th {
+    border-top: none !important;
     background: #fff0f6 !important;
     color: #ff69b4 !important;
-    border-bottom: 2px solid #ffe6f0 !important;
-}
-
-.table td {
-    vertical-align: middle;
-}
-
-/* Titles */
-h1, h2, h3, h4, h5, h6, .brand-text {
-    color: #ff69b4 !important;
-    font-weight: bold;
-}
-
-/* Search bar */
-.navbar-search-block .form-control-navbar {
-    background: #fff0f6 !important;
-    border: 1px solid #ffe6f0 !important;
-    border-radius: 20px;
 }

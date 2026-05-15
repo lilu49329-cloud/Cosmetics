@@ -276,9 +276,19 @@ JAZZMIN_SETTINGS = {
     "show_changelist_top_actions": True,
     "show_changelist_bottom_actions": False,
 
-    "site_logo_classes": "img-circle",
+    "site_logo_classes": "brand-image",
     "site_logo_dark": None,
     "site_logo_light": None,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_variant": "navbar-white navbar-light",
+    "theme": "flatly",
+    "dark_mode_theme": None,
+    "sidebar_variant": "sidebar-light-primary",
+    "admin_log_item_class": "info",
+    "accent": "accent-primary",
+    "sidebar_nav_child_indent": True,
 }
 
 # VNPay Settings (Sandbox)
