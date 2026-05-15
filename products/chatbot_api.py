@@ -264,21 +264,16 @@ def chatbot_api(request):
 
     faqs = FAQ.objects.filter(is_active=True).order_by('-id')
 
-    # Nhận diện các yêu cầu đổi sản phẩm hoặc tư vấn thêm
-    is_asking_other = any(kw in message.lower() for kw in ['khác', 'đổi', 'thêm', 'nữa', 'thay'])
+    # Cố gắng tìm câu trả lời chính xác từ FAQ trước
+    answer = (
+        find_faq_by_tags(message, faqs)
+        or find_faq_by_brand(message, faqs)
+        or find_faq_by_question(message, faqs)
+    )
     
-    # Nếu yêu cầu đổi loại khác, bỏ qua logic tìm kiếm cứng và chuyển cho AI
-    if is_asking_other:
+    # Nếu FAQ không có câu trả lời, hãy để AI thông minh xử lý toàn bộ!
+    if not answer:
         answer = call_openai_api(message, session_id)
-    else:
-        answer = (
-            find_faq_by_tags(message, faqs)
-            or find_faq_by_brand(message, faqs)
-            or find_faq_by_question(message, faqs)
-            or find_product_info(message)
-        )
-        if not answer:
-            answer = call_openai_api(message, session_id)
             
     if not answer:
         answer = "Xin lỗi, tôi chưa có câu trả lời phù hợp. Vui lòng để lại thông tin, chúng tôi sẽ liên hệ lại!"
