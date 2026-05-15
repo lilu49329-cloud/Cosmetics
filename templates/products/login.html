@@ -6,16 +6,27 @@
 <div class="auth-title text-center mb-3" style="font-size: 2rem; font-weight: bold; color: #ff69b4;">Đăng nhập</div>
 <form method="post" autocomplete="off">
     {% csrf_token %}
-    {{ form.non_field_errors }}
+    
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger py-2 px-3 mb-3" style="font-size: 0.9rem; border-radius: 8px;">
+        {% for error in form.non_field_errors %}
+            <div class="d-flex align-items-center gap-2">
+                <span style="font-size: 1.2rem;">⚠️</span>
+                <span>{{ error }}</span>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="mb-3 d-flex align-items-center" style="gap: 12px;">
-        <div style="min-width: 110px; text-align: left;">{{ form.username.label_tag }}</div>
-        <div style="flex:1;">{{ form.username|add_class:'w-100' }}</div>
+        <div style="min-width: 120px; text-align: left;">{{ form.username.label_tag }}</div>
+        <div style="flex:1;">{{ form.username|add_class:'w-100 px-3 py-2'|attr:"style:border-radius:8px;" }}</div>
     </div>
     <div class="mb-3 d-flex align-items-center" style="gap: 12px;">
-        <div style="min-width: 110px; text-align: left;">{{ form.password.label_tag }}</div>
-        <div style="flex:1;">{{ form.password|add_class:'w-100' }}</div>
+        <div style="min-width: 120px; text-align: left;">{{ form.password.label_tag }}</div>
+        <div style="flex:1;">{{ form.password|add_class:'w-100 px-3 py-2'|attr:"style:border-radius:8px;" }}</div>
     </div>
-    <button type="submit" class="btn btn-auth w-100 mb-2" style="font-weight:600;">ĐĂNG NHẬP</button>
+    <button type="submit" class="btn btn-auth w-100 mb-2 mt-2" style="font-weight:600; height:45px; border-radius:8px;">ĐĂNG NHẬP</button>
 </form>
 <div class="d-flex justify-content-between mb-3" style="font-size:0.97rem;">
     <a href="/password-reset/">Quên mật khẩu?</a>
