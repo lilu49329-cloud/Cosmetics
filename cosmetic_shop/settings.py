@@ -245,7 +245,7 @@ JAZZMIN_SETTINGS = {
     "hide_models": [],
     "order_with_respect_to": ["products", "auth"],
 
-    "custom_css": "css/cosmetic_admin.css",  # Sử dụng file CSS hồng đen riêng
+    "custom_css": "css/cosmetic_admin_v2.css",
     "custom_js": "js/cosmetic_admin.js",
 
     "icons": {
@@ -286,15 +286,8 @@ JAZZMIN_UI_TWEAKS = {
     "theme": "default",
     "dark_mode_theme": None,
     "sidebar_variant": "sidebar-light-primary",
-    "admin_log_item_class": "info",
     "accent": "accent-pink",
     "sidebar_nav_child_indent": True,
-    "sidebar_nav_compact_style": False,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": False,
-    "navbar_fixed": True,
-    "sidebar_fixed": True,
-    "footer_fixed": False,
 }
 
 # VNPay Settings (Sandbox)

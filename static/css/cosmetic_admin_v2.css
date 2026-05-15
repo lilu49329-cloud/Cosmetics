@@ -1,0 +1,64 @@
+/* COSMETIC SHOP ADMIN - V2 ULTRA SYNC */
+:root {
+    --pink-primary: #ff69b4;
+    --pink-light: #fff0f6;
+    --pink-border: #ffe6f0;
+}
+
+/* 🏆 ÉP SIDEBAR MÀU TRẮNG TUYỆT ĐỐI */
+aside.main-sidebar, 
+.main-sidebar, 
+.sidebar,
+.os-content,
+.brand-link,
+.user-panel {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border-right: 1px solid var(--pink-border) !important;
+}
+
+/* Fix Logo & Brand - Không còn viền đen */
+.brand-link {
+    border-bottom: 2px solid var(--pink-border) !important;
+    padding: 15px 20px !important;
+    background: #ffffff !important;
+}
+
+.brand-link .brand-text {
+    color: var(--pink-primary) !important;
+    font-weight: 800 !important;
+    font-size: 1.4rem !important;
+}
+
+/* Fix chữ Admin bị chìm - Chuyển sang màu Hồng để nổi trên cả nền đen lẫn trắng */
+.user-panel .info a, .user-panel .info {
+    color: var(--pink-primary) !important;
+    font-weight: bold !important;
+    font-size: 1.1rem !important;
+    background: transparent !important;
+}
+
+/* Fix viền đen/xám lờ mờ */
+.main-sidebar {
+    border-right: 1px solid var(--pink-border) !important;
+}
+
+.nav-sidebar .nav-link {
+    color: #333333 !important;
+}
+
+.nav-sidebar .nav-link:hover {
+    background-color: var(--pink-light) !important;
+    color: var(--pink-primary) !important;
+}
+
+.nav-sidebar .nav-item.active > .nav-link,
+.nav-sidebar .nav-link.active {
+    background-color: var(--pink-primary) !important;
+    color: #ffffff !important;
+}
+
+.main-header.navbar {
+    background-color: #ffffff !important;
+    border-bottom: 2px solid var(--pink-border) !important;
+}
