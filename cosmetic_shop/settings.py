@@ -103,7 +103,7 @@ CSRF_TRUSTED_ORIGINS = [
 INSTALLED_APPS = [
     'jazzmin',  # Giao diện admin hiện đại
     'django.contrib.admin',
-    'django.contrib.auth',
+    'cosmetic_shop.apps_labels.MyAuthConfig',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -114,8 +114,8 @@ INSTALLED_APPS = [
 
     # Allauth
     "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
+    "cosmetic_shop.apps_labels.MyAccountConfig",
+    "cosmetic_shop.apps_labels.MySocialAccountConfig",
 
     # Provider
     "allauth.socialaccount.providers.facebook",
@@ -123,7 +123,7 @@ INSTALLED_APPS = [
     # Thêm ứng dụng của bạn
     'products.apps.ProductsConfig',
     'widget_tweaks',
-    'django_apscheduler',
+    'cosmetic_shop.apps_labels.MyDjangoApschedulerConfig',
 ]
 
 SITE_ID = 1
