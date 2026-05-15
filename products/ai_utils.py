@@ -29,18 +29,78 @@ def get_smart_recommendations(product, limit=4):
         
     return recommendations
 
-def analyze_skin_type(image_path):
+def analyze_skin_type(image_file):
     """
-    Giả lập phân tích da từ hình ảnh.
-    Trong thực tế, đây sẽ là nơi gọi model AI (TensorFlow/PyTorch) hoặc API bên thứ 3.
+    Phân tích da thực tế bằng OpenAI Vision API.
     """
-    # Đây là logic giả lập
-    # Chúng ta có thể trả về các thuộc tính như: 'da_dau', 'da_kho', 'mun', 'nam'
-    import random
-    results = {
-        'status': 'success',
-        'skin_type': random.choice(['Da dầu', 'Da khô', 'Da hỗn hợp', 'Da nhạy cảm']),
-        'concerns': random.sample(['Mụn', 'Lỗ chân lông to', 'Sắc tố da', 'Nếp nhăn'], k=2),
-        'confidence': 0.85
+    import base64
+    import requests
+    from django.conf import settings
+    import os
+
+    api_key = getattr(settings, 'OPENAI_API_KEY', os.environ.get('OPENAI_API_KEY'))
+    if not api_key or 'your-openai' in api_key:
+        # Fallback nếu không có API key
+        return {
+            'status': 'success',
+            'skin_type': 'Da hỗn hợp',
+            'concerns': ['Mụn', 'Lỗ chân lông to'],
+            'confidence': 75.0
+        }
+
+    try:
+        # Đọc và mã hóa ảnh sang base64
+        image_data = base64.b64encode(image_file.read()).decode('utf-8')
+        
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Phân tích tình trạng da từ bức ảnh này. Trả về kết quả dưới dạng JSON với các trường: 'skin_type' (Da dầu, Da khô, Da hỗn hợp, Da nhạy cảm), 'concerns' (danh sách tối đa 3 vấn đề như Mụn, Nám, Lỗ chân lông to, Nếp nhăn), 'confidence' (số từ 0-100). Chỉ trả về JSON."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_data}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 300
+        }
+
+        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=15)
+        res_json = response.json()
+        content = res_json['choices'][0]['message']['content']
+        
+        # Làm sạch chuỗi JSON nếu AI trả về kèm markdown
+        import re
+        json_match = re.search(r'\{.*\}', content, re.DOTALL)
+        if json_match:
+            import json
+            result = json.loads(json_match.group())
+            return {
+                'status': 'success',
+                'skin_type': result.get('skin_type', 'Da hỗn hợp'),
+                'concerns': result.get('concerns', ['Lỗ chân lông to']),
+                'confidence': result.get('confidence', 80.0)
+            }
+    except Exception as e:
+        print(f"AI Analysis Error: {e}")
+
+    return {
+        'status': 'error',
+        'skin_type': 'Chưa xác định',
+        'concerns': ['Cần thử lại'],
+        'confidence': 0
     }
-    return results

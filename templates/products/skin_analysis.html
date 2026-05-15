@@ -150,6 +150,18 @@
 </style>
 
 <script>
+    document.getElementById('skinImage').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const iconContainer = document.querySelector('.upload-section .mb-4');
+                iconContainer.innerHTML = `<img src="${event.target.result}" class="img-fluid rounded-3 shadow-sm" style="max-height: 250px; width: auto;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
     document.getElementById('analysisForm').addEventListener('submit', function() {
         const btn = document.getElementById('analyzeBtn');
         btn.disabled = true;

@@ -816,11 +816,11 @@ def skin_analysis(request):
     from .ai_utils import analyze_skin_type
     result = None
     if request.method == 'POST' and request.FILES.get('image'):
-        # In actual implementation, you would save the image and pass path to model
-        result = analyze_skin_type(None)
+        img_file = request.FILES['image']
+        result = analyze_skin_type(img_file)
         
         # Filter products based on result
-        skin_type = result['skin_type']
+        skin_type = result.get('skin_type', 'Da hỗn hợp')
         recommended_products = Product.objects.filter(
             Q(skin_type__icontains=skin_type) | Q(description__icontains=skin_type)
         ).filter(is_active=True)[:6]
