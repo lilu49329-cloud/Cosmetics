@@ -285,7 +285,7 @@ JAZZMIN_UI_TWEAKS = {
     "navbar_variant": "navbar-white navbar-light",
     "theme": "default",
     "dark_mode_theme": None,
-    "sidebar_variant": "sidebar-light-pink",
+    "sidebar_variant": "sidebar-light-primary",
     "admin_log_item_class": "info",
     "accent": "accent-pink",
     "sidebar_nav_child_indent": True,
