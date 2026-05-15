@@ -40,6 +40,19 @@ from .forms import ProductForm, ProductSearchForm, CartAddProductForm, CustomerF
 from .cart import Cart
 from django.utils import timezone
 from django.db import models
+from django.conf import settings
+from .vnpay import vnpay
+from .ai_utils import get_smart_recommendations
+from .shipping_utils import calculate_shipping_fee
+import datetime
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 @login_required
 def user_update(request):
@@ -330,6 +343,18 @@ def admin_order_detail(request, order_id):
                 else:
                     msg = f"Trạng thái đơn hàng #{order.id} đã được cập nhật: {order.get_status_display()}"
                 Notification.objects.create(user=order.customer.user, message=msg)
+            
+            # Cộng điểm khi hoàn thành đơn hàng
+            if new_status == 'completed' and order.customer and hasattr(order.customer, 'user') and order.customer.user:
+                points_to_add = int(order.total_amount / 1000) # 1000đ = 1 điểm
+                profile = order.customer.user.profile
+                profile.points += points_to_add
+                profile.save()
+                Notification.objects.create(
+                    user=order.customer.user, 
+                    message=f"Chúc mừng! Bạn vừa được cộng {points_to_add} điểm thưởng từ đơn hàng #{order.id}. Hạng hiện tại: {profile.membership_tier}"
+                )
+
             messages.success(request, f'Trạng thái đơn hàng #{order.id} đã được cập nhật thành "{order.get_status_display()}".')
             return redirect('admin_order_detail', order_id=order.id)
     return render(request, 'products/admin_order_detail.html', {'order': order})
@@ -437,15 +462,15 @@ def product_detail(request, id):
     if product.original_price and product.original_price > product.price:
         discount_amount = product.original_price - product.price
         discount_percent = round(100 * (product.original_price - product.price) / product.original_price)
-    # Lấy các sản phẩm cùng thương hiệu
-    related_products = Product.objects.filter(brand=product.brand, is_active=True).exclude(id=product.id)[:8]
+    # Lấy các sản phẩm gợi ý thông minh
+    related_products = get_smart_recommendations(product, limit=8)
     # Tính discount_percent cho từng sản phẩm đề xuất
     suggested_products = []
     for sp in related_products:
-        discount_percent = None
+        d_percent = None
         if sp.original_price and sp.original_price > sp.price:
-            discount_percent = round(100 * (sp.original_price - sp.price) / sp.original_price)
-        sp.discount_percent = discount_percent
+            d_percent = round(100 * (sp.original_price - sp.price) / sp.original_price)
+        sp.discount_percent = d_percent
         suggested_products.append(sp)
     # Lấy review mới nhất đầu tiên
     reviews = product.reviews.order_by('-created_at')
@@ -543,7 +568,7 @@ def order_create(request):
     cart = Cart(request)
     if len(cart) == 0:
         messages.warning(request, 'Giỏ hàng của bạn đang trống!')
-        return redirect('products')
+        return redirect('product_list')
 
     if request.method == 'POST':
         customer_form = CustomerForm(request.POST)
@@ -572,6 +597,14 @@ def order_create(request):
                 )
 
             order.calculate_total()
+            
+            # Tính phí ship và cập nhật tổng tiền
+            shipping_info = calculate_shipping_fee(order.shipping_address)
+            order.shipping_fee = shipping_info['fee']
+            order.total_amount += order.shipping_fee
+            # Giả lập mã vận đơn khi đơn hàng được tạo (hoặc có thể đợi lúc confirmed)
+            order.tracking_number = f"GHTK{order.id}XYZ"
+            order.save()
 
             cart.clear()
 
@@ -582,6 +615,25 @@ def order_create(request):
                     user=request.user,
                     message=f'Bạn đã đặt hàng thành công! Mã đơn hàng: #{order.id}'
                 )
+
+            # Xử lý thanh toán Online
+            if order.payment_method == 'vnpay':
+                vnp = vnpay()
+                vnp.request_data['vnp_Version'] = '2.1.0'
+                vnp.request_data['vnp_Command'] = 'pay'
+                vnp.request_data['vnp_TmnCode'] = settings.VNPAY_TMN_CODE
+                vnp.request_data['vnp_Amount'] = int(order.total_amount * 100)
+                vnp.request_data['vnp_CurrCode'] = 'VND'
+                vnp.request_data['vnp_TxnRef'] = str(order.id)
+                vnp.request_data['vnp_OrderInfo'] = f'Thanh toan don hang #{order.id}'
+                vnp.request_data['vnp_OrderType'] = 'other'
+                vnp.request_data['vnp_Locale'] = 'vn'
+                vnp.request_data['vnp_CreateDate'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+                vnp.request_data['vnp_IpAddr'] = get_client_ip(request)
+                vnp.request_data['vnp_ReturnUrl'] = settings.VNPAY_RETURN_URL
+                
+                vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET)
+                return redirect(vnpay_payment_url)
 
             # Chuyển hướng sang trang thành công với nút xem chi tiết đơn
             return redirect('order_created', order_id=order.id)
@@ -700,3 +752,107 @@ def notifications(request):
     # Đánh dấu tất cả là đã đọc khi truy cập
     notifications.update(is_read=True)
     return render(request, 'products/notifications.html', {'notifications': notifications})
+
+# VNPay Return View
+def vnpay_return(request):
+    vnp = vnpay()
+    vnp.response_data = request.GET.dict()
+    vnp_SecureHash = request.GET.get('vnp_SecureHash')
+    order_id = request.GET.get('vnp_TxnRef')
+    amount = int(request.GET.get('vnp_Amount', 0)) / 100
+    order_desc = request.GET.get('vnp_OrderInfo')
+    vnp_ResponseCode = request.GET.get('vnp_ResponseCode')
+    vnp_TransactionNo = request.GET.get('vnp_TransactionNo')
+    
+    if vnp.validate_response(settings.VNPAY_HASH_SECRET):
+        if vnp_ResponseCode == "00":
+            # Success
+            order = get_object_or_404(Order, id=order_id)
+            order.is_paid = True
+            order.transaction_id = vnp_TransactionNo
+            order.status = 'confirmed'
+            order.save()
+            
+            # Gửi thông báo cho user
+            if order.customer and hasattr(order.customer, 'user') and order.customer.user:
+                Notification.objects.create(
+                    user=order.customer.user,
+                    message=f"Thanh toán đơn hàng #{order.id} thành công!"
+                )
+                
+            return render(request, 'products/orders/vnpay_return.html', {
+                'title': 'Kết quả thanh toán',
+                'result': 'Thành công',
+                'order_id': order_id,
+                'amount': amount,
+                'order_desc': order_desc,
+                'vnp_TransactionNo': vnp_TransactionNo,
+                'vnp_ResponseCode': vnp_ResponseCode
+            })
+        else:
+            return render(request, 'products/orders/vnpay_return.html', {
+                'title': 'Kết quả thanh toán',
+                'result': f'Lỗi (Code: {vnp_ResponseCode})',
+                'order_id': order_id,
+                'amount': amount,
+                'order_desc': order_desc,
+                'vnp_TransactionNo': vnp_TransactionNo,
+                'vnp_ResponseCode': vnp_ResponseCode
+            })
+    else:
+        return render(request, 'products/orders/vnpay_return.html', {
+            'title': 'Kết quả thanh toán',
+            'result': 'Lỗi checksum (Chữ ký không hợp lệ)',
+            'order_id': order_id,
+            'amount': amount,
+            'order_desc': order_desc,
+            'vnp_TransactionNo': vnp_TransactionNo,
+            'vnp_ResponseCode': vnp_ResponseCode
+        })
+
+# Skin Analysis View
+@login_required
+def skin_analysis(request):
+    from .ai_utils import analyze_skin_type
+    result = None
+    if request.method == 'POST' and request.FILES.get('image'):
+        # In actual implementation, you would save the image and pass path to model
+        result = analyze_skin_type(None)
+        
+        # Filter products based on result
+        skin_type = result['skin_type']
+        recommended_products = Product.objects.filter(
+            Q(skin_type__icontains=skin_type) | Q(description__icontains=skin_type)
+        ).filter(is_active=True)[:6]
+        result['products'] = recommended_products
+
+    return render(request, 'products/skin_analysis.html', {'result': result})
+
+# Admin Dashboard
+@staff_member_required(login_url='/login/')
+def admin_dashboard(request):
+    from django.db.models import Sum, Count
+    from django.db.models.functions import TruncMonth
+    
+    total_revenue = Order.objects.filter(is_paid=True).aggregate(total=Sum('total_amount'))['total'] or 0
+    total_orders = Order.objects.count()
+    completed_orders = Order.objects.filter(status='completed').count()
+    
+    revenue_by_month = Order.objects.filter(is_paid=True).annotate(
+        month=TruncMonth('order_date')
+    ).values('month').annotate(total=Sum('total_amount')).order_by('month')
+    
+    top_products = Product.objects.annotate(
+        total_sold=Sum('order_items__quantity')
+    ).order_by('-total_sold')[:5]
+    
+    low_stock_products = Product.objects.filter(quantity_in_stock__lt=10, is_active=True)
+    
+    return render(request, 'products/admin_dashboard.html', {
+        'total_revenue': total_revenue,
+        'total_orders': total_orders,
+        'completed_orders': completed_orders,
+        'revenue_by_month': list(revenue_by_month),
+        'top_products': top_products,
+        'low_stock_products': low_stock_products,
+    })

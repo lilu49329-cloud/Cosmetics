@@ -10,3 +10,10 @@ def currency_vnd(value):
     except (ValueError, TypeError):
         return value
 
+@register.filter
+def multiply(value, arg):
+    try:
+        return value * arg
+    except:
+        return 0
+

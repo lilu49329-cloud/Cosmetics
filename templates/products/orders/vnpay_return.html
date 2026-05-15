@@ -1,0 +1,91 @@
+{% extends "products/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header {% if result == 'Thành công' %}bg-success{% else %}bg-danger{% endif %} text-white py-4 text-center">
+                    <h3 class="mb-0"><i class="fas {% if result == 'Thành công' %}fa-check-circle{% else %}fa-times-circle{% endif %} mr-2"></i>{{ title }}</h3>
+                </div>
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        {% if result == 'Thành công' %}
+                            <div class="display-1 text-success mb-3"><i class="fas fa-check-circle"></i></div>
+                            <h4 class="text-success font-weight-bold">Thanh toán thành công!</h4>
+                            <p class="text-muted">Đơn hàng của bạn đang được xử lý.</p>
+                        {% else %}
+                            <div class="display-1 text-danger mb-3"><i class="fas fa-exclamation-circle"></i></div>
+                            <h4 class="text-danger font-weight-bold">Thanh toán thất bại</h4>
+                            <p class="text-muted">Đã có lỗi xảy ra trong quá trình thanh toán hoặc giao dịch bị hủy.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="bg-light p-4 rounded-3 mb-4">
+                        <div class="row mb-2">
+                            <div class="col-sm-5 text-muted">Mã đơn hàng:</div>
+                            <div class="col-sm-7 font-weight-bold">#{{ order_id }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-5 text-muted">Số tiền:</div>
+                            <div class="col-sm-7 text-primary font-weight-bold">{{ amount|intcomma }} VNĐ</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-5 text-muted">Nội dung:</div>
+                            <div class="col-sm-7">{{ order_desc }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-sm-5 text-muted">Mã giao dịch:</div>
+                            <div class="col-sm-7">{{ vnp_TransactionNo }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-5 text-muted">Trạng thái:</div>
+                            <div class="col-sm-7">
+                                {% if result == 'Thành công' %}
+                                    <span class="badge bg-success">Thành công</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ result }} (Code: {{ vnp_ResponseCode }})</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        {% if result == 'Thành công' %}
+                            <a href="{% url 'order_detail' order_id %}" class="btn btn-primary btn-lg rounded-pill shadow-sm">
+                                <i class="fas fa-file-invoice mr-2"></i>Xem chi tiết đơn hàng
+                            </a>
+                        {% else %}
+                            <a href="{% url 'order_create' %}" class="btn btn-warning btn-lg rounded-pill shadow-sm">
+                                <i class="fas fa-redo mr-2"></i>Thử lại
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg rounded-pill">
+                            <i class="fas fa-home mr-2"></i>Về trang chủ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    .btn-lg {
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+    }
+    .rounded-pill {
+        border-radius: 50px !important;
+    }
+    .bg-light {
+        background-color: #f8f9fa !important;
+        border: 1px solid #e9ecef;
+    }
+</style>
+{% endblock %}

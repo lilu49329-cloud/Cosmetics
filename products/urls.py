@@ -16,6 +16,7 @@ urlpatterns = [
     path('order/create-now/<int:id>/', views.order_create_now, name='order_create_now'),
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     path('order/created/<int:order_id>/', views.order_created, name='order_created'),
+    path('order/vnpay_return/', views.vnpay_return, name='vnpay_return'),
     path('promotions/', views.promotions, name='promotions'),
     path('flash-sale/', views.flash_sale, name='flash_sale'),
     path('flash-sale-list/', views.flash_sale_list, name='flash_sale_list'),
@@ -40,6 +41,8 @@ urlpatterns = [
     path('password-reset/otp/', password_otp_verify, name='password_otp_verify'),
     path('password-reset/confirm/', password_reset_confirm, name='password_reset_confirm'),
     path('category/<int:id>/', views.category_products, name='category_products'),
+    path('skin-analysis/', views.skin_analysis, name='skin_analysis'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
 
     # API endpoint cho chatbot
     path('api/chatbot/', chatbot_api, name='chatbot_api'),

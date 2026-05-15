@@ -271,3 +271,13 @@ JAZZMIN_SETTINGS = {
     "site_logo_dark": None,
     "site_logo_light": None,
 }
+
+# VNPay Settings (Sandbox)
+VNPAY_TMN_CODE = '2QXG2Y4C' # Mã website tại VNPAY 
+VNPAY_HASH_SECRET = 'AN8L6H9N8N8N8N8N8N8N8N8N8N8N8N8N' # Chuỗi bí mật
+VNPAY_PAYMENT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'
+VNPAY_RETURN_URL = 'http://127.0.0.1:8000/order/vnpay_return/' # URL nhận kết quả
+
+# Chatbot AI (OpenAI)
+# Chatbot AI (OpenAI)
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'your-openai-api-key-here') # Dán API Key của bạn vào đây hoặc dùng biến môi trường để kích hoạt chatbot AI

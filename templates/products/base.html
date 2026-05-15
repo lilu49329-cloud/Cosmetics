@@ -10,13 +10,32 @@
     <meta property="og:description" content="Mỹ phẩm chính hãng, giá tốt, dịch vụ tận tâm.">
     <meta property="og:type" content="website">
     <link rel="icon" type="image/png" href="{% static 'images/logoshop.png' %}">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
     <title>{% block title %}Cosmetics{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.min.css">
     <style>
+        :root {
+            --bg-color: #fff0f6;
+            --text-color: #18141c;
+            --card-bg: #fff;
+            --header-gradient: linear-gradient(90deg, #ffb6e6 0%, #ff69b4 100%);
+            --primary-pink: #ff69b4;
+            --hover-pink: #d72660;
+        }
+
+        [data-bs-theme="dark"] {
+            --bg-color: #1a1625;
+            --text-color: #f8f9fa;
+            --card-bg: #2d2438;
+            --header-gradient: linear-gradient(90deg, #2d2438 0%, #ff69b4 100%);
+            --primary-pink: #ff85c0;
+        }
+
         body {
-            background: #fff0f6 !important;
-            color: #18141c;
+            background: var(--bg-color) !important;
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
         .shopee-header {
             background: linear-gradient(90deg, #ffb6e6 0%, #ff69b4 100%) !important;
@@ -368,6 +387,9 @@
                 <a href="#" class="text-decoration-none">Tiếng Việt</a>
             </div>
             <div class="d-flex gap-2 align-items-center">
+                <button class="btn btn-sm btn-outline-light border-0 me-2" id="dark-mode-toggle">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
                 <a href="{% url 'user_dashboard' %}" class="d-flex align-items-center gap-2 text-decoration-none" style="padding:0 8px;">
                     <img src="{% if user.is_authenticated and user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}/static/images/default-category.png{% endif %}" alt="Avatar" class="rounded-circle border" style="width:32px;height:32px;object-fit:cover;">
                     <span style="font-weight:600;color:#fff;">{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% else %}Tài khoản{% endif %}</span>
@@ -425,9 +447,13 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'flash_sale' %}"hotdeals">KHUYẾN MÃI</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'flash_sale' %}">FLASH SALE</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'news' %}">NEWS</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'skin_analysis' %}">PHÂN TÍCH DA AI</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'brands' %}">THƯƠNG HIỆU</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'stores' %}">HỆ THỐNG CỬA HÀNG</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'user_orders' %}">ĐƠN HÀNG CỦA TÔI</a></li>
+                    {% if user.is_staff %}
+                    <li class="nav-item"><a class="nav-link text-warning" href="{% url 'admin_dashboard' %}">ADMIN DASHBOARD</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -645,6 +671,42 @@
             });
 
         </script>
+        <script>
+            // Register PWA Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/static/sw.js');
+            }
+
+            // Dark Mode Toggle Logic
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved preference
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            htmlElement.setAttribute('data-bs-theme', savedTheme);
+            updateToggleButton(savedTheme);
+
+            darkModeToggle.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                htmlElement.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateToggleButton(newTheme);
+            });
+
+            function updateToggleButton(theme) {
+                const icon = darkModeToggle.querySelector('i');
+                if (theme === 'dark') {
+                    icon.className = 'bi bi-sun';
+                    darkModeToggle.classList.remove('btn-outline-light');
+                    darkModeToggle.classList.add('btn-outline-warning');
+                } else {
+                    icon.className = 'bi bi-moon-stars';
+                    darkModeToggle.classList.remove('btn-outline-warning');
+                    darkModeToggle.classList.add('btn-outline-light');
+                }
+            }
+        </script>
             {% block extra_js %}{% endblock %}
 <!-- Chatbot Widget -->
 <style>
@@ -766,11 +828,8 @@
         <button onclick="document.getElementById('chatbot-widget').style.display='none';document.getElementById('chatbot-toggle-btn').style.display='block';" style="background:none;border:none;color:#fff;font-size:1.2rem;">&times;</button>
     </div>
     <div id="chatbot-messages"></div>
-    <div id="chatbot-suggestions" style="padding:8px 16px; background:#fff0f6; border-top:1px solid #ffb6e6; display:none;">
-        <div style="font-size:0.95rem; color:#d72660; margin-bottom:4px;">Gợi ý câu hỏi:</div>
-        <button class="chatbot-suggest-btn" type="button">Làm sao để đặt hàng?</button>
-        <button class="chatbot-suggest-btn" type="button">Sản phẩm này có phù hợp da nhạy cảm không?</button>
-        <button class="chatbot-suggest-btn" type="button">Shop có khuyến mãi gì hôm nay?</button>
+    <!-- Gợi ý câu hỏi đã ẩn theo yêu cầu -->
+    <div id="chatbot-suggestions" style="display:none;">
     </div>
     <div id="chatbot-input-row">
         <input id="chatbot-input" type="text" placeholder="Nhập câu hỏi..." autocomplete="off" />
@@ -871,17 +930,20 @@ chatbotInput.addEventListener('keydown', function(e) {
 
 let chatbotFirstOpen = true;
 chatbotToggleBtn.onclick = function() {
+    // Mỗi lần mở là một cuộc trò chuyện mới
+    chatbotMessages.innerHTML = '';
+    sessionStorage.removeItem('chatbot_history');
+    chatbotSessionId = Math.random().toString(36).substring(2, 12);
+    localStorage.setItem('chatbot_session_id', chatbotSessionId);
+    
     chatbotWidget.style.display = 'flex';
     chatbotToggleBtn.style.display = 'none';
-    chatbotSuggestions.style.display = 'block';
-    loadChatHistory();
-    if (chatbotFirstOpen) {
-        setTimeout(function() {
-            appendMessage('Xin chào! Tôi là AI tư vấn mỹ phẩm. Bạn có thể hỏi về sản phẩm, đặt hàng, khuyến mãi hoặc bất cứ điều gì liên quan đến shop.', 'bot');
-            saveChatHistory();
-        }, 300);
-        chatbotFirstOpen = false;
-    }
+    chatbotSuggestions.style.display = 'none';
+    
+    setTimeout(function() {
+        appendMessage('Xin chào! Tôi là AI tư vấn mỹ phẩm. Bạn có thể hỏi về sản phẩm, đặt hàng, khuyến mãi hoặc bất cứ điều gì liên quan đến shop.', 'bot');
+        saveChatHistory();
+    }, 300);
 };
 
 // Gợi ý câu hỏi mẫu

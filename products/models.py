@@ -72,6 +72,25 @@ class UserProfile(models.Model):
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     points = models.IntegerField(default=0)
+    
+    @property
+    def membership_tier(self):
+        if self.points >= 5000:
+            return "Kim cương (Diamond)"
+        elif self.points >= 2000:
+            return "Vàng (Gold)"
+        elif self.points >= 1000:
+            return "Bạc (Silver)"
+        else:
+            return "Đồng (Bronze)"
+            
+    @property
+    def discount_rate(self):
+        # Tỷ lệ giảm giá dựa trên hạng thành viên
+        if self.points >= 5000: return 0.15 # 15%
+        if self.points >= 2000: return 0.10 # 10%
+        if self.points >= 1000: return 0.05 # 5%
+        return 0
 
     def __str__(self):
         return self.user.username
@@ -260,8 +279,12 @@ class Order(models.Model):
         default="pending"
     )
     payment_method = models.CharField("Hình thức thanh toán", max_length=20, choices=PAYMENT_METHODS, default="cod")
+    is_paid = models.BooleanField("Đã thanh toán", default=False)
+    transaction_id = models.CharField("Mã giao dịch", max_length=100, blank=True, null=True)
     shipping_address = models.CharField("Địa chỉ giao hàng", max_length=255, default="", blank=True)
     total_amount = models.DecimalField("Tổng tiền", max_digits=14, decimal_places=2, default=0)
+    shipping_fee = models.DecimalField("Phí vận chuyển", max_digits=10, decimal_places=2, default=0)
+    tracking_number = models.CharField("Mã vận đơn", max_length=50, blank=True, null=True)
     note = models.TextField("Ghi chú", blank=True)
 
     class Meta:

@@ -1,0 +1,21 @@
+{
+  "name": "Cosmetics Store",
+  "short_name": "Cosmetics",
+  "description": "Mỹ phẩm chính hãng, giá tốt, dịch vụ tận tâm.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ff69b4",
+  "theme_color": "#ff69b4",
+  "icons": [
+    {
+      "src": "/static/images/logoshop.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/logoshop.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

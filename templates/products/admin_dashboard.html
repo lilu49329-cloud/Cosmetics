@@ -1,0 +1,197 @@
+{% extends "products/base.html" %}
+{% load humanize %}
+{% load currency_filters %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold"><i class="fas fa-chart-line me-2 text-primary"></i>Admin Analytics Dashboard</h1>
+        <div class="text-muted">Last updated: {% now "H:i, d/m/Y" %}</div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="opacity-75 mb-1">Tổng doanh thu</h6>
+                        <h3 class="fw-bold mb-0">{{ total_revenue|intcomma }}đ</h3>
+                    </div>
+                    <div class="fs-1 opacity-25"><i class="fas fa-dollar-sign"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-success text-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="opacity-75 mb-1">Đơn hàng thành công</h6>
+                        <h3 class="fw-bold mb-0">{{ completed_orders }}</h3>
+                    </div>
+                    <div class="fs-1 opacity-25"><i class="fas fa-check-circle"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-info text-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="opacity-75 mb-1">Tổng số đơn hàng</h6>
+                        <h3 class="fw-bold mb-0">{{ total_orders }}</h3>
+                    </div>
+                    <div class="fs-1 opacity-25"><i class="fas fa-shopping-bag"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-warning text-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="opacity-75 mb-1">Sản phẩm sắp hết</h6>
+                        <h3 class="fw-bold mb-0">{{ low_stock_products.count }}</h3>
+                    </div>
+                    <div class="fs-1 opacity-25"><i class="fas fa-exclamation-triangle"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Revenue Chart -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold mb-4">Biểu đồ doanh thu</h5>
+                <canvas id="revenueChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold mb-4 text-danger"><i class="fas fa-bell me-2"></i>Cảnh báo tồn kho</h5>
+                {% if low_stock_products %}
+                <div class="list-group list-group-flush">
+                    {% for product in low_stock_products %}
+                    <div class="list-group-item px-0 border-0 mb-2">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded p-2 me-3">
+                                    <i class="fas fa-box text-warning"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ product.name|truncatechars:20 }}</h6>
+                                    <small class="text-muted">Tồn kho: <span class="text-danger fw-bold">{{ product.quantity_in_stock }}</span></small>
+                                </div>
+                            </div>
+                            <a href="{% url 'product_edit' product.id %}" class="btn btn-sm btn-outline-primary rounded-pill">Nhập hàng</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5 opacity-50">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <p>Kho hàng ổn định</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top Selling Products -->
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-4">Top 5 sản phẩm bán chạy nhất</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Thương hiệu</th>
+                                <th>Giá bán</th>
+                                <th>Số lượng đã bán</th>
+                                <th>Doanh thu dự tính</th>
+                                <th>Tình trạng kho</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in top_products %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if product.image %}
+                                        <img src="{{ product.image.url }}" class="rounded me-3" style="width:40px;height:40px;object-fit:cover;">
+                                        {% endif %}
+                                        <span class="fw-bold">{{ product.name }}</span>
+                                    </div>
+                                </td>
+                                <td>{{ product.brand.name }}</td>
+                                <td>{{ product.price|intcomma }}đ</td>
+                                <td><span class="badge bg-primary rounded-pill">{{ product.total_sold|default:0 }}</span></td>
+                                <td class="fw-bold text-success">{{ product.total_sold|default:0|multiply:product.price|intcomma }}đ</td>
+                                <td>
+                                    {% if product.quantity_in_stock > 10 %}
+                                    <span class="text-success"><i class="fas fa-check-circle me-1"></i>Còn hàng ({{ product.quantity_in_stock }})</span>
+                                    {% else %}
+                                    <span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>Sắp hết ({{ product.quantity_in_stock }})</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const data = {
+        labels: [{% for item in revenue_by_month %}'{{ item.month|date:"m/Y" }}',{% endfor %}],
+        datasets: [{
+            label: 'Doanh thu (VNĐ)',
+            data: [{% for item in revenue_by_month %}{{ item.total }},{% endfor %}],
+            borderColor: '#ff69b4',
+            backgroundColor: 'rgba(255, 105, 180, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString() + 'đ';
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

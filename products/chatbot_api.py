@@ -41,6 +41,7 @@ def find_faq_by_question(message, faqs):
 
 
 def find_product_info(message):
+    msg = message.lower()
     # Trả lời về tin tức (news)
     if any(kw in msg for kw in ['tin tức', 'news', 'bài viết', 'bài báo', 'sự kiện']):
         # Giả sử có model News với các trường title, summary, created_at
@@ -93,7 +94,7 @@ def find_product_info(message):
     # Trả lời về đơn hàng
     if any(kw in msg for kw in ['đơn hàng', 'order', 'mua hàng', 'tình trạng đơn', 'kiểm tra đơn hàng']):
         return "Bạn có thể kiểm tra tình trạng đơn hàng bằng cách đăng nhập tài khoản hoặc liên hệ nhân viên tư vấn qua hotline, fanpage hoặc chat trực tiếp."
-    msg = message.lower()
+    
     # Luôn lấy dữ liệu sản phẩm mới nhất từ DB, không lưu cache
     products = Product.objects.filter(is_active=True)
     # Tìm theo xuất xứ/thương hiệu quốc gia
@@ -102,8 +103,8 @@ def find_product_info(message):
         if country in msg:
             ps = products.filter(brand_origin__icontains=country)
             if ps.exists():
-                plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ | Xuất xứ: {p.brand_origin}" for p in ps[:5]])
-                return f"Các sản phẩm xuất xứ từ {country.title()} của shop:\n{plist}"
+                p = ps.first()
+                return f"Dạ, shop có sản phẩm {p.name} (Hãng {p.brand.name if p.brand else 'Đang cập nhật'}). Không biết tình trạng da hiện tại của bạn như thế nào để mình tư vấn kỹ hơn ạ?"
             else:
                 # Nếu không có sản phẩm khớp hoàn toàn, lấy các sản phẩm có brand_origin không rỗng
                 ps = products.exclude(brand_origin__isnull=True).exclude(brand_origin__exact='')
@@ -123,18 +124,16 @@ def find_product_info(message):
             sale_price__isnull=False
         )
         if promo_products.exists():
-            plist = '\n'.join([
-                f"- {p.name}:\n  Mô tả: {p.description[:60]}...\n  Giá gốc: {p.price:,}đ\n  Giá khuyến mãi: {getattr(p, 'sale_price', p.price):,}đ\n  Thương hiệu: {p.brand.name if p.brand else ''}\n  Loại da: {p.skin_type or ''}\n  Công dụng: {getattr(p, 'usage', '')}\n  Thành phần: {getattr(p, 'ingredients', '')}\n  Xuất xứ: {getattr(p, 'brand_origin', '')}"
-                for p in promo_products
-            ])
-            return f"Các sản phẩm đang khuyến mãi tại shop:\n{plist}"
+            p = promo_products.first()
+            return f"Hiện shop đang có deal hời cho {p.name} (Hãng {p.brand.name if p.brand else ''}). Bạn cần tư vấn cho tình trạng da nào ạ?"
         else:
             return "Hiện tại shop chưa có sản phẩm nào đang khuyến mãi. Bạn có thể xem chi tiết tại trang Khuyến mãi hoặc hỏi nhân viên tư vấn nhé!"
     # Nếu hỏi về sản phẩm cụ thể
     for p in products:
         if p.name.lower() in msg:
-            info = f"{p.name}: {p.description}\nGiá: {p.price:,}đ | Thương hiệu: {p.brand.name if p.brand else ''} | Loại da: {p.skin_type or 'Mọi loại da'}"
-            return info
+            if any(kw in msg for kw in ['tác dụng', 'công dụng', 'dùng làm gì', 'có tốt không', 'hiệu quả']):
+                return f"{p.name}: {p.description}\nGiá: {p.price:,}đ | Loại da: {p.skin_type or 'Mọi loại da'}"
+            return f"Dạ, đó là {p.name} của hãng {p.brand.name if p.brand else ''}. Bạn đang gặp vấn đề gì về da để mình tư vấn xem sản phẩm này có phù hợp không nhé?"
     # Phân loại sản phẩm rõ ràng theo nhóm và brand
     brands = Brand.objects.values_list('name', flat=True)
     product_types = [
@@ -155,33 +154,24 @@ def find_product_info(message):
     if found_brand and found_type:
         ps = products.filter(brand__name__iexact=found_brand, name__icontains=found_type)
         if ps.exists():
-            plist = '\n'.join([
-                f"- {p.name}:\n  Mô tả: {p.description[:60]}...\n  Giá: {p.price:,}đ\n  Thương hiệu: {p.brand.name if p.brand else ''}\n  Loại da: {p.skin_type or ''}\n  Công dụng: {getattr(p, 'usage', '')}\n  Thành phần: {getattr(p, 'ingredients', '')}\n  Xuất xứ: {getattr(p, 'brand_origin', '')}"
-                for p in ps
-            ])
-            return f"Các sản phẩm {found_type} của {found_brand} nổi bật:\n{plist}"
+            p = ps.first()
+            return f"Dạ, shop có {p.name} của hãng {found_brand}. Bạn đang gặp tình trạng da như thế nào để mình xem sản phẩm này có giúp được gì không ạ?"
         else:
             return f"Hiện chưa có sản phẩm {found_type} của {found_brand} trong shop."
     # Nếu chỉ hỏi nhóm sản phẩm
     if found_type and not found_brand:
         ps = products.filter(name__icontains=found_type)
         if ps.exists():
-            plist = '\n'.join([
-                f"- {p.name}:\n  Mô tả: {p.description[:60]}...\n  Giá: {p.price:,}đ\n  Thương hiệu: {p.brand.name if p.brand else ''}\n  Loại da: {p.skin_type or ''}\n  Công dụng: {getattr(p, 'usage', '')}\n  Thành phần: {getattr(p, 'ingredients', '')}\n  Xuất xứ: {getattr(p, 'brand_origin', '')}"
-                for p in ps
-            ])
-            return f"Các sản phẩm {found_type} của shop:\n{plist}"
+            p = ps.first()
+            return f"Dạ, shop có {p.name} (Hãng {p.brand.name if p.brand else ''}). Bạn cần tư vấn cho tình trạng da cụ thể nào không ạ?"
         else:
             return f"Hiện chưa có sản phẩm {found_type} nào trong shop."
     # Nếu chỉ hỏi brand
     if found_brand and not found_type:
         ps = products.filter(brand__name__iexact=found_brand)
         if ps.exists():
-            plist = '\n'.join([
-                f"- {p.name}:\n  Mô tả: {p.description[:60]}...\n  Giá: {p.price:,}đ\n  Loại da: {p.skin_type or ''}\n  Công dụng: {getattr(p, 'usage', '')}\n  Thành phần: {getattr(p, 'ingredients', '')}\n  Xuất xứ: {getattr(p, 'brand_origin', '')}"
-                for p in ps[:5]
-            ])
-            return f"Các sản phẩm của {found_brand} nổi bật:\n{plist}"
+            p = ps.first()
+            return f"Dạ, hãng {found_brand} có sản phẩm {p.name} rất nổi tiếng. Bạn đang gặp vấn đề gì về da để mình tư vấn kỹ hơn cho bạn nhé?"
         else:
             return f"Hiện chưa có sản phẩm nào của {found_brand} trong shop."
     # Tìm theo loại da
@@ -190,42 +180,26 @@ def find_product_info(message):
         if st in msg:
             ps = products.filter(skin_type__icontains=st)
             if ps.exists():
-                plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ" for p in ps[:5]])
-                return f"Các sản phẩm phù hợp cho da {st} của shop:\n{plist}"
+                p = ps.first()
+                return f"Cho da {st}, tôi gợi ý sản phẩm: {p.name}. Giá: {p.price:,}đ. Sản phẩm này rất được ưa chuộng!"
             else:
-                # Nếu không có sản phẩm khớp hoàn toàn, lấy các sản phẩm có skin_type không rỗng
-                ps = products.exclude(skin_type__isnull=True).exclude(skin_type__exact='')
-                if ps.exists():
-                    plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ | Loại da: {p.skin_type}" for p in ps[:5]])
-                    return f"Một số sản phẩm và loại da phù hợp:\n{plist}"
-    # Nếu hỏi về cách liên hệ
-    if any(kw in msg for kw in ['liên hệ', 'tư vấn', 'gặp nhân viên', 'hỗ trợ']):
-        return "Bạn có thể liên hệ shop qua hotline, fanpage hoặc chat trực tiếp với nhân viên tư vấn ở góc phải màn hình."
+                return f"Hiện chưa có sản phẩm cụ thể cho da {st}, bạn có thể xem các loại dùng cho mọi loại da nhé."
+    # Bỏ phần chặn từ khóa 'tư vấn' để AI có thể xử lý linh hoạt hơn
+    pass
 
-    # Nếu hỏi về nhóm sản phẩm (ví dụ: son, kem chống nắng, kẻ mắt...)
-    product_types = [
-        'son', 'kem chống nắng', 'sữa rửa mặt', 'serum', 'kem dưỡng', 'mặt nạ', 'tẩy trang', 'phấn', 'nước hoa hồng', 'toner', 'dưỡng ẩm',
-        'kẻ mắt', 'eyeliner', 'mascara', 'kẻ mày', 'chì kẻ mắt', 'chì kẻ mày', 'bút kẻ mắt', 'bút kẻ mày'
-    ]
-    for pt in product_types:
-        if pt in msg:
-            ps = products.filter(name__icontains=pt)
-            if ps.exists():
-                plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ" for p in ps])
-                return f"Các sản phẩm {pt} của shop:\n{plist}"
+    # Xóa bỏ các loop lặp lại
+    pass
     # Nếu không khớp nhóm nào, trả về danh sách tất cả sản phẩm
     if any(kw in msg for kw in ['sản phẩm', 'loại sản phẩm', 'danh sách sản phẩm', 'có những loại', 'có những sản phẩm']):
-        ps = products.all()
-        if ps.exists():
-            plist = '\n'.join([f"- {p.name}: {p.description[:60]}... Giá: {p.price:,}đ" for p in ps])
-            return f"Danh sách sản phẩm của shop:\n{plist}"
+        return "Shop có rất nhiều sản phẩm đa dạng từ chăm sóc da đến trang điểm. Bạn đang quan tâm đến nhóm sản phẩm nào (ví dụ: son, tẩy trang, kem dưỡng...)?"
     return None
 
 def call_openai_api(message):
     import requests
-    api_key = os.environ.get('OPENAI_API_KEY')
+    from django.conf import settings
+    api_key = getattr(settings, 'OPENAI_API_KEY', os.environ.get('OPENAI_API_KEY'))
     if not api_key:
-        return None
+        return "Xin lỗi, hệ thống AI (OpenAI) chưa được cấu hình khóa API. Vui lòng liên hệ quản trị viên."
     headers = {
         'Authorization': f'Bearer {api_key}',
         'Content-Type': 'application/json',
@@ -243,11 +217,12 @@ def call_openai_api(message):
     # Lấy lịch sử chat gần nhất
     recent_chats = ChatHistory.objects.order_by('-created_at')[:5]
     chat_history = '\n'.join([f"Khách: {c.message}\nBot: {c.bot_reply}" for c in recent_chats])
-    # Prompt hệ thống ép trả lời tiếng Việt, học từ DB
     system_prompt = (
-        "Bạn là trợ lý tư vấn mỹ phẩm cho shop Cosmetics, hãy trả lời ngắn gọn, thân thiện, ưu tiên sản phẩm của shop. Luôn trả lời bằng tiếng Việt. "
-        "Hãy tư vấn dựa trên mọi thông tin sản phẩm, thương hiệu, công dụng, thành phần, loại da, xuất xứ... được cung cấp bên dưới. "
-        "Bạn có thể học từ các câu hỏi thường gặp và lịch sử chat trước đó."
+        "Bạn là chuyên gia tư vấn mỹ phẩm cao cấp. Quy trình tư vấn của bạn PHẢI tuân thủ các bước sau: "
+        "1. Khi khách hỏi về sản phẩm/loại sản phẩm, CHỈ trả lời Tên sản phẩm và Tên hãng. "
+        "2. Sau đó, hãy hỏi khách về Tình trạng da hoặc Vấn đề họ đang gặp phải. "
+        "3. CHỈ giải thích công dụng, thành phần khi khách hỏi chi tiết (ví dụ: 'nó có tác dụng gì?', 'dùng thế nào?'). "
+        "TRÁNH nói quá nhiều ngay từ đầu. Luôn ngắn gọn, thân thiện và chuyên nghiệp bằng tiếng Việt."
     )
     if product_info:
         system_prompt += f"\nDữ liệu sản phẩm liên quan: {product_info}"
