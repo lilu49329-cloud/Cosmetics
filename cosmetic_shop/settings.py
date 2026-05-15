@@ -299,4 +299,4 @@ VNPAY_RETURN_URL = 'http://127.0.0.1:8000/order/vnpay_return/' # URL nhận kế
 
 # Chatbot AI (OpenAI)
 # Chatbot AI (OpenAI)
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'your-openai-api-key-here') # Dán API Key của bạn vào đây hoặc dùng biến môi trường để kích hoạt chatbot AI
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY') # Dán API Key của bạn vào đây hoặc dùng biến môi trường để kích hoạt chatbot AI
