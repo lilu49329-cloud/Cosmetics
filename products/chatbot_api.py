@@ -194,7 +194,7 @@ def find_product_info(message):
         return "Shop có rất nhiều sản phẩm đa dạng từ chăm sóc da đến trang điểm. Bạn đang quan tâm đến nhóm sản phẩm nào (ví dụ: son, tẩy trang, kem dưỡng...)?"
     return None
 
-def call_openai_api(message):
+def call_openai_api(message, session_id=None):
     import requests
     from django.conf import settings
     api_key = getattr(settings, 'OPENAI_API_KEY', os.environ.get('OPENAI_API_KEY'))
@@ -214,9 +214,9 @@ def call_openai_api(message):
     # Lấy top FAQ
     faqs = FAQ.objects.filter(is_active=True).order_by('-id')[:10]
     faq_data = '\n'.join([f"Q: {f.question}\nA: {f.answer}" for f in faqs])
-    # Lấy lịch sử chat gần nhất
-    recent_chats = ChatHistory.objects.order_by('-created_at')[:5]
-    chat_history = '\n'.join([f"Khách: {c.message}\nBot: {c.bot_reply}" for c in recent_chats])
+    # Lấy lịch sử chat của phiên hiện tại (session_id) để tránh lặp
+    recent_chats = ChatHistory.objects.filter(session_id=session_id).order_by('-created_at')[:5] if session_id else ChatHistory.objects.order_by('-created_at')[:5]
+    chat_history = '\n'.join([f"Khách: {c.message}\nBot: {c.bot_reply}" for c in reversed(recent_chats)])
     system_prompt = (
         "Bạn là chuyên gia tư vấn mỹ phẩm cao cấp. Quy trình tư vấn của bạn PHẢI tuân thủ các bước sau: "
         "1. Khi khách hỏi về sản phẩm/loại sản phẩm, CHỈ trả lời Tên sản phẩm và Tên hãng. "
@@ -264,14 +264,22 @@ def chatbot_api(request):
 
     faqs = FAQ.objects.filter(is_active=True).order_by('-id')
 
-    answer = (
-        find_faq_by_tags(message, faqs)
-        or find_faq_by_brand(message, faqs)
-        or find_faq_by_question(message, faqs)
-        or find_product_info(message)
-    )
-    if not answer:
-        answer = call_openai_api(message)
+    # Nhận diện các yêu cầu đổi sản phẩm hoặc tư vấn thêm
+    is_asking_other = any(kw in message.lower() for kw in ['khác', 'đổi', 'thêm', 'nữa', 'thay'])
+    
+    # Nếu yêu cầu đổi loại khác, bỏ qua logic tìm kiếm cứng và chuyển cho AI
+    if is_asking_other:
+        answer = call_openai_api(message, session_id)
+    else:
+        answer = (
+            find_faq_by_tags(message, faqs)
+            or find_faq_by_brand(message, faqs)
+            or find_faq_by_question(message, faqs)
+            or find_product_info(message)
+        )
+        if not answer:
+            answer = call_openai_api(message, session_id)
+            
     if not answer:
         answer = "Xin lỗi, tôi chưa có câu trả lời phù hợp. Vui lòng để lại thông tin, chúng tôi sẽ liên hệ lại!"
 
