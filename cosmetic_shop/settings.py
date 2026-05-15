@@ -222,6 +222,7 @@ STATICFILES_DIRS = [
 WHITENOISE_USE_FINDERS = True
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
+# Cấu hình Media (chỉ dùng được với ảnh đã push lên Git khi dùng Vercel)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

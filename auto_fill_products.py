@@ -170,7 +170,7 @@ def extract_info(results):
 def fill_missing_fields(product):
     name = product.name
     brand_name = getattr(product.brand, "name", "") if hasattr(product, "brand") else ""
-    print(f"🧴 Đang xử lý: {name}")
+    # print(f"🧴 Đang xử lý: {name}")
 
     results = search_google_info(name, brand_name)
     desc, origin, texture = extract_info(results)
@@ -239,7 +239,7 @@ def fill_missing_fields(product):
         product.flash_sale = True
 
     product.save()
-    print(f"✅ Đã cập nhật: {name}")
+    # print(f"✅ Đã cập nhật: {name}")
 
 # ---------------------------
 # 🚀 Hàm chính
