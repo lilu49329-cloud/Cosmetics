@@ -42,7 +42,7 @@
     <div class="col-12">
         <div class="rounded shadow-sm p-4 mb-4" style="background:#fff;">
             <h4 style="color:#ff69b4;font-weight:bold;">⚡ Flash Sale</h4>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 g-md-4">
                 {% for product in flash_sale_products %}
                 <div class="col">
                     <a href="{% url 'product_detail' product.id %}" style="text-decoration:none; color:inherit;">
@@ -141,7 +141,7 @@ document.querySelectorAll('.countdown').forEach(function(cd){
             <h4 style="color:#ff69b4;font-weight:bold;">🔥 Sản phẩm hot</h4>
             <div class="row g-3">
                 {% for product in hot_products %}
-                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="col-6 col-md-4 col-lg-3">
                     <div class="card h-100 shadow-sm position-relative" style="border:2px solid #ff69b4; border-radius:1.2rem; cursor:pointer;">
                         <a href="{% url 'product_detail' product.id %}" style="text-decoration:none; color:inherit;">
                             <div class="position-absolute" style="top:10px;right:10px;z-index:2;">
@@ -201,7 +201,7 @@ document.querySelectorAll('.countdown').forEach(function(cd){
         </div>
         <div class="row g-3">
             {% for product in products %}
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="col-6 col-md-4 col-lg-3">
                 <div class="card h-100 shadow-sm position-relative" style="border:2px solid #ff69b4; border-radius:1.2rem; cursor:pointer;">
                     <a href="{% url 'product_detail' product.id %}" style="text-decoration:none; color:inherit;">
                         <div class="position-absolute" style="top:10px;right:10px;z-index:2;">

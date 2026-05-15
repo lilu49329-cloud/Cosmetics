@@ -338,37 +338,45 @@
         .cart-btn-abs i {
             font-size: 1.4rem !important;
         }
-        /* Premium Button Style */
-        .btn-premium {
-            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
-            color: #fff !important;
-            border: none;
-            border-radius: 50px;
-            padding: 10px 28px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3);
-            text-decoration: none;
-            display: inline-flex;
+        /* Responsive Tweaks */
+        @media (max-width: 768px) {
+            .shopee-header {
+                display: none !important; /* Ẩn thanh top bar phụ trên mobile */
+            }
+            .header-search-form {
+                order: 3;
+                width: 100% !important;
+                margin: 10px 0 !important;
+            }
+            .navbar-brand {
+                font-size: 1.8rem !important;
+            }
+            .navbar-brand img {
+                height: 32px !important;
+            }
+            .container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+            #chatbot-widget {
+                width: 300px;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+        
+        .header-main-container {
+            display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            cursor: pointer;
+            justify-content: space-between;
+            flex-wrap: wrap;
         }
-        .btn-premium:hover {
-            transform: translateY(-4px) scale(1.05);
-            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.45);
-            background: linear-gradient(135deg, #ff1493 0%, #ff69b4 100%);
-            color: #fff !important;
+
+        .product-card img {
+            transition: transform 0.5s ease;
         }
-        .btn-premium:active {
-            transform: translateY(-1px);
-        }
-        .btn-premium.btn-sm {
-            padding: 6px 18px;
-            font-size: 0.8rem;
+        .product-card:hover img {
+            transform: scale(1.08);
         }
     </style>
 </head>
@@ -404,7 +412,7 @@
             <img src="{% static 'images/logoshop.png' %}" alt="Cosmetics Logo" style="height:44px;width:auto;display:inline-block;vertical-align:middle;">
             <span style="font-family:Arial Black;">Cosmetics</span>
         </a>
-        <form class="d-flex flex-grow-1 mx-4" style="max-width:500px;" method="get" action="{% url 'product_search' %}">
+        <form class="d-flex flex-grow-1 mx-4 header-search-form" style="max-width:500px;" method="get" action="{% url 'product_search' %}">
             <input class="form-control me-2" type="search" name="q" placeholder="Tìm sản phẩm bạn muốn" aria-label="Search" value="{{ request.GET.q|default:'' }}">
             <button class="btn btn-auth d-flex align-items-center justify-content-center" type="submit" style="width:44px;height:44px;padding:0;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
