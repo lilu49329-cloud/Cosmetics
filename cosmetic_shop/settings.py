@@ -85,12 +85,16 @@ ALLOWED_HOSTS = [
     'cosmetic-1-8j7w.onrender.com',
     'localhost',
     '127.0.0.1',
+    'cosmetics-sable-iota.vercel.app',
+    '.vercel.app',
     '5b36b858b31b.ngrok-free.app',
     '.ngrok-free.app',   # cho phép tất cả subdomain của ngrok
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://cosmetic-1-8j7w.onrender.com",
+    "https://cosmetics-sable-iota.vercel.app",
+    "https://*.vercel.app",
     "https://*.ngrok-free.app",
 ]
 
