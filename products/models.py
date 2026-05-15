@@ -18,7 +18,7 @@ class Slider(models.Model):
 
     class Meta:
         verbose_name = 'Slider/Banner'
-        verbose_name_plural = 'Sliders/Banners'
+        verbose_name_plural = 'Quản lý Slider/Banner'
         ordering = ['sort_order', '-created_at']
 
     def __str__(self):
@@ -55,8 +55,8 @@ class Brand(models.Model):
     logo = models.ImageField("Logo thương hiệu", upload_to="brands/", blank=True, null=True)
 
     class Meta:
-        verbose_name = "Brand"
-        verbose_name_plural = "Brands"
+        verbose_name = "Thương hiệu"
+        verbose_name_plural = "Quản lý Thương hiệu"
 
     def __str__(self):
         return self.name
@@ -115,8 +115,8 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Notification"
-        verbose_name_plural = "Notifications"
+        verbose_name = "Thông báo"
+        verbose_name_plural = "Quản lý Thông báo"
         ordering = ["-created_at"]
 
     def __str__(self):
@@ -151,8 +151,8 @@ class Promotion(models.Model):
     products = models.ManyToManyField('Product', related_name='promotions', blank=True)
 
     class Meta:
-        verbose_name = "Promotion"
-        verbose_name_plural = "Promotions"
+        verbose_name = "Khuyến mãi"
+        verbose_name_plural = "Quản lý Khuyến mãi"
 
     def __str__(self):
         return self.name
@@ -163,16 +163,16 @@ class Category(models.Model):
     description = models.TextField("Mô tả", blank=True)
 
     class Meta:
-        verbose_name = "Category"
-        verbose_name_plural = "Categories"
+        verbose_name = "Danh mục"
+        verbose_name_plural = "Quản lý Danh mục"
 
     def __str__(self):
         return self.name
 
 class Product(models.Model):
     class Meta:
-        verbose_name = "Product"
-        verbose_name_plural = "Products"
+        verbose_name = "Sản phẩm"
+        verbose_name_plural = "Quản lý Sản phẩm"
 
     brand_origin = models.TextField("Xuất xứ thương hiệu", blank=True, null=True)
     texture = models.TextField("Kết cấu", blank=True, null=True)
@@ -205,8 +205,8 @@ class ProductImage(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Product Image"
-        verbose_name_plural = "Product Images"
+        verbose_name = "Ảnh sản phẩm"
+        verbose_name_plural = "Quản lý Ảnh sản phẩm"
 
 
 class Store(models.Model):
@@ -216,8 +216,8 @@ class Store(models.Model):
     phone = models.CharField("Điện thoại", max_length=20, blank=True)
 
     class Meta:
-        verbose_name = "Store"
-        verbose_name_plural = "Stores"
+        verbose_name = "Cửa hàng"
+        verbose_name_plural = "Quản lý Cửa hàng"
 
     def __str__(self):
         return self.name
@@ -247,8 +247,8 @@ class Customer(models.Model):
     updated_at = models.DateTimeField("Ngày cập nhật", auto_now=True)
 
     class Meta:
-        verbose_name = "Customer"
-        verbose_name_plural = "Customers"
+        verbose_name = "Khách hàng"
+        verbose_name_plural = "Quản lý Khách hàng"
 
     def __str__(self):
         return self.full_name
@@ -288,8 +288,8 @@ class Order(models.Model):
     note = models.TextField("Ghi chú", blank=True)
 
     class Meta:
-        verbose_name = "Order"
-        verbose_name_plural = "Orders"
+        verbose_name = "Đơn hàng"
+        verbose_name_plural = "Quản lý Đơn hàng"
         ordering = ["-order_date"]
 
     def __str__(self):
@@ -313,8 +313,8 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField("Số lượng", default=1)
 
     class Meta:
-        verbose_name = "Order Item"
-        verbose_name_plural = "Order Items"
+        verbose_name = "Chi tiết đơn hàng"
+        verbose_name_plural = "Chi tiết đơn hàng"
 
     def __str__(self):
         return f"{self.product_name} ({self.quantity})"
